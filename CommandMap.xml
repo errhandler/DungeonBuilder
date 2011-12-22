@@ -1,0 +1,222 @@
+<CommandMap rootCommand="db">
+	<Command name="list" command="listdungeons" description="List all owned dungeons"/>
+	<Command name="start" command="startdungeon" description="Queue or Start the specified dungeon">
+		<Argument name="name" description="The name of the dungeon to start"/>
+	</Command>
+	<Command name="leave" command="leavedungeon" description="Leave the dungeon you are currently running"/>
+	<Command name="continue" command="continuedungeon" description="Continue the dungeon you are current running"/>
+	<Category name="create" description="Create new dungeon">
+		<Command name="dungeon" command="createdungeon" description="Create a new dungeon from existing landscape">
+			<Argument name="alias" description="The alias for the dungeon"/>
+			<Argument name="width" description="Dungeon width"/>
+			<Argument name="length" description="Dungeon length"/>
+			<Argument name="height" description="Dungeon height"/>
+			<Argument name="type" default="BEDROCK" description="Shell type"/>
+		</Command>
+		<Command name="empty-dungeon" command="createemptydungeon" description="Create an empty dungeon">
+			<Argument name="alias" description="The alias for the dungeon"/>
+			<Argument name="width" description="Dungeon width"/>
+			<Argument name="length" description="Dungeon length"/>
+			<Argument name="height" description="Dungeon height"/>
+			<Argument name="type" default="BEDROCK" description="Shell type"/>
+		</Command>
+		<Category name="markers" description="Commands related to creating a dungeon from markers">
+			<Category name="set" description="Set dungeon markers">
+				<Command name="first" command="setfirstdungeonmarker" description="Sets the first dungeon marker"/>
+				<Command name="second" command="setseconddungeonmarker" description="Sets the second dungeon marker"/>
+			</Category>
+			<Command name="create" command="createdungeonfrommarkers" description="Create the dungeon from markers">
+				<Argument name="alias" description="The alias for the dungeon"/>
+				<Argument name="type" default="BEDROCK" description="Shell type"/>
+			</Command>
+		</Category>
+		<Command name="undo" command="undodungeoncreation" description="Undo creation of a dungeon">
+			<Argument name="alias" description="The alias of the dungeon to undo creation for"/>
+		</Command>
+	</Category>
+	<Command name="create-world" command="createworld" description="Create a new world">
+		<Argument name="name" description="The name for the new world"/>
+		<Argument name="type" description="The type of world" default="NORMAL"/>
+	</Command>
+	<Category name="teleport" description="Teleport commands">
+		<Command name="world" command="teleporttoworld" description="Teleport to a different world">
+			<Argument name="name" description="The world name"/>
+		</Command>
+		<Command name="spawn" command="teleporttospawn" description="Teleport to the default spawn point"/>
+		<Command name="dungeon" command="teleporttodungeon" description="Teleport to a dungeon starting location">
+			<Argument name="alias" description="The dungeon alias to teleport to"/>
+		</Command>
+		<Command name="dungeon-center" command="teleporttodungeoncenter" description="Teleport to the center of the dungeon">
+			<Argument name="alias" description="The dungeon alias to teleport to"/>
+		</Command>
+		<Command name="dungeon-outside" command="teleportoutsidedungeon" description="Teleport to a location outside the dungeon">
+			<Argument name="alias" description="The dungeon alias to teleport to"/>
+		</Command>
+	</Category>
+	<Category name="manage" description="Manage dungeon behavior">
+		<Command name="save" command="savedungeon" description="Save dungeon changes">
+			<Argument name="alias" description="The alias of the dungeon to save"/>
+		</Command>
+		<Command name="load" command="loaddungeon" description="Load the dungeon from the previous save">
+			<Argument name="alias" description="The alias of the dungeon to load"/>
+		</Command>
+		<Command name="dungeon-params" command="viewdungeonparameters" description="Display dungeon parameters">
+			<Argument name="alias" description="The dungeon alias view parameters for"/>
+		</Command>
+		<Category name="locations" description="Commands for managing dungeon locations">
+			<Command name="dungeon-start" command="setdungeonstart" description="Set the starting location for the dungeon">
+				<Argument name="alias" description="The alias of the dungeon to change the starting location"/>
+			</Command>
+			<Command name="dungeon-exit" command="setdungeonexit" description="Set the exit teleporter location for the dungeon">
+				<Argument name="alias" description="The alias of the dungeon to change the exit location"/>
+			</Command>
+			<Command name="dungeon-exit-dest" command="setdungeonexitdestination" description="Set the location players teleport to when they leave">
+				<Argument name="alias" description="The alias of the dungeon to change the exit destination"/>
+			</Command>
+		</Category>
+		<Command name="publish" command="publishdungeon" description="Publish the dungeon for players to use">
+			<Argument name="alias" description="The alias of the dungeon to publish"/>
+		</Command>
+		<Command name="unpublish" command="unpublishdungeon" description="Unpublish the dungeon from player use">
+			<Argument name="alias" description="The alias of the dungeon to unpublish"/>
+		</Command>
+		<Command name="delete" command="deletedungeon" description="Delete the dungeon permanently">
+			<Argument name="alias" description="The alias of the dungeon to delete"/>
+			<Argument name="clear" description="Clear the dungeon when deleting (true | false)" default="false"/>
+		</Command>
+		<Command name="reset-triggers" command="resettriggers" description="Reset all monster/script/savepoint triggers for the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to reset triggers for"/>
+		</Command>
+		<Command name="toggle-autoload" command="toggleautoload" description="Toggle the autoload functionality for the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to toggle autoload on"/>
+			<Argument name="enabled" description="Set autoload status for the dungeon (true = on, false = off)" default="true"/>
+		</Command>
+		<Category name="monsters" description="Commands for managing monster spawnpoints">
+			<Command name="add" command="addmonsterspawn" description="Add a monster spawn point">
+				<Argument name="alias" description="The alias used to refer to this spawn point"/>
+				<Argument name="type" description="The type of monster to spawn"/>
+				<Argument name="dungeon-alias" description="The dungeon alias to add the monster spawn to"/>
+			</Command>
+			<Command name="remove" command="removemonsterspawn" description="Remove a monster spawn point">
+				<Argument name="alias" description="The alias of the monster spawn to remove"/>
+				<Argument name="dungeon-alias" description="The dungeon alias that contains the spawn point"/>
+			</Command>
+			<Command name="list" command="listmonsterspawns" description="List monster spawn points">
+				<Argument name="dungeon-alias" description="The alias of the dungeon to list spawn points for"/>
+			</Command>
+			<Command name="spawn" command="spawnmonsters" description="Spawn monsters for the dungeon">
+				<Argument name="dungeon-alias" description="The alias of the dungeon to spawn monsters for"/>
+			</Command>
+			<Command name="kill" command="killmonsters" description="Kill monsters in the dungeon">
+				<Argument name="dungeon-alias" description="The alias of the dungeon to kill monsters in"/>
+			</Command>
+			<Command name="add-trigger" command="addmonstertrigger" description="Add a trigger block(s) for a monster spawn">
+				<Argument name="alias" description="The alias for this trigger"/>
+				<Argument name="dungeon-alias" description="The alias of the dungeon to set the trigger for"/>
+				<Argument name="monster-alias" description="The monster alias that this trigger will spawn"/>
+				<Argument name="block-count" description="The number of blocks this trigger will span"/>
+			</Command>
+			<Command name="remove-trigger" command="removemonstertrigger" description="Removes a previously set monster trigger">
+				<Argument name="alias" description="The alias for the trigger"/>
+				<Argument name="dungeon-alias" description="The alias for the dungeon that contains the trigger"/>
+			</Command>
+			<Command name="list-triggers" command="listmonstertriggers" description="Lists monster triggers for a dungeon">
+				<Argument name="dungeon-alias" description="The alias of the dungeon to display trigers for"/>
+			</Command>
+		</Category>
+		<Category name="save-points" description="Command for managing dungeon savepoints">
+			<Command name="add" command="addsavepoint" description="Add a save point to the dungeon">
+				<Argument name="alias" description="The alias of the save point"/>
+				<Argument name="dungeon-alias" description="The alias of the dungeon the save point is for"/>
+				<Argument name="block-count" description="The number of blocks the save point should span"/>
+			</Command>
+			<Command name="remove" command="removesavepoint" description="Remove a save point from the dungeon">
+				<Argument name="alias" description="The alias of the save point to remove"/>
+				<Argument name="dungeon-alias" description="The alias of the dungeon that contains the savepoint"/>
+			</Command>
+			<Command name="list" command="listsavepoints" description="List save points for the dungeon">
+				<Argument name="dungeon-alias" description="The alias of the dungeon to list save points for"/>
+			</Command>
+		</Category>
+		<Category name="clear" description="Commands for clearing dungeon contents">
+			<Command name="contents" command="cleardungeon" description="Clears the entire dungeon">
+				<Argument name="alias" description="The alias of the dungeon to clear"/>
+			</Command>
+			<Command name="liquids" command="clearliquids" description="Clears lava/water in the dungeon">
+				<Argument name="alias" description="The alias of the dungeon to clear"/>
+			</Command>
+			<Command name="torches" command="cleartorches" description="Clears the torches in the dungeon">
+				<Argument name="alias" description="The alias of the dungeon to clear"/>
+			</Command>
+		</Category>
+		<Category name="reward" description="Commands for managing dungeon rewards">
+			<Command name="show" command="showdungeonreward" description="Shows the current dungeon reward amount">
+				<Argument name="alias" description="The alias of the dungeon to show rewards for"/>
+			</Command>
+			<Command name="set" command="setdungeonreward" description="Sets the dungeon's reward amount">
+				<Argument name="alias" description="The alias of the dungeon to set the reward for"/>
+				<Argument name="amount" description="The amount of money to reward the player"/>
+			</Command>
+		</Category>
+	</Category>
+	<Category name="perms" description="Commands for managing dungeon permissions">
+		<Command name="add" command="adddefaultdungeonpermission" description="Adds a default permission to the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to add the permission to"/>
+			<Argument name="node" description="The permission node to add"/>
+		</Command>
+		<Command name="remove" command="removedefaultdungeonpermission" description="Removes the default permission from the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to remove the permission from"/>
+			<Argument name="node" description="The permission node to remove"/>
+		</Command>
+		<Command name="clear" command="cleardefaultdungeonpermissions" description="Clears the default permissions for the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to clear permissions on"/>
+		</Command>
+		<Command name="list" command="listdefaultdungeonpermissions" description="Lists the default permissions for the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to list permissions for"/>
+		</Command>
+	</Category>
+	<Category name="party" description="Party management commands">
+		<Category name="dungeon" description="Manage dungeon party configuration">
+			<Command name="size" command="setpartysize" description="Set the party size for the dungeon">
+				<Argument name="alias" description="The alias of the dungeon to set the party size for"/>
+				<Argument name="count" description="The number of players in the party"/>
+			</Command>
+		</Category>
+		<Command name="accept" command="acceptinvite" description="Accept a pending party invite"/>
+		<Command name="add" command="addpartymember" description="Add a player to the party">
+			<Argument name="name" description="The name of the player to add"/>
+		</Command>
+		<Command name="leave" command="leaveparty" description="Leave the party"/>
+		<Command name="list" command="listparty" description="List party members"/>
+		<Command name="kick" command="kickpartymember" description="Remove a player from the party">
+			<Argument name="name" description="The name of the player to remove"/>
+		</Command>
+		<Command name="disband" command="disbandparty" description="Disband the party"/>
+	</Category>
+	<Category name="scripts" description="Script management">
+		<Command name="add" command="addscripttrigger" description="Add a script trigger to a dungeon">
+			<Argument name="alias" description="The alias of the script trigger"/>
+			<Argument name="dungeon-alias" description="The alias of the dungeon to add the script trigger to"/>
+			<Argument name="script-function" description="The function that will be called by the script trigger"/>
+			<Argument name="block-count" description="The number of blocks the trigger will span"/>
+		</Command>
+		<Command name="remove" command="removescripttrigger" description="Remove a script trigger from a dungeon">
+			<Argument name="alias" description="The alias of the script trigger to remove"/>
+			<Argument name="dungeon-alias" description="The dungeon that contains the script trigger"/>
+		</Command>
+		<Command name="list" command="listscripttriggers" description="List script triggers in a dungeon">
+			<Argument name="dungeon-alias" description="The dungeon to list script triggers for"/>
+		</Command>
+	</Category>
+	<Category name="templates" description="Dungeon template management">
+		<Command name="create-template" command="createdungeontemplate" description="Creates a new template from an existing dungeon">
+			<Argument name="dungeon-alias" description="The dungeon the template will be created from"/>
+			<Argument name="template-name" description="The name of the template being created"/>
+		</Command>
+		<Command name="create-dungeon" command="createdungeonfromtemplate" description="Creates a dungeon from an existing template">
+			<Argument name="template-name" description="The name of the template to create the dungeon from"/>
+			<Argument name="dungeon-alias" description="The alias to give the newly created dungeon"/>
+		</Command>
+		<Command name="list" command="listtemplates" description="List all available dungeon templates"/>
+	</Category>
+</CommandMap>

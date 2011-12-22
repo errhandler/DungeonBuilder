@@ -1,0 +1,408 @@
+name: DungeonBuilder
+main: net.virtuallyabstract.minecraft.DungeonBuilder
+version: 0.8.1
+permissions:
+  '*':
+    description: Grants all dungeon builder permissions
+    children:
+      dungeonbuilder.*: true
+  dungeonbuilder.*:
+    description: Grants all dungeon builder permissions
+    children:
+      dungeonbuilder.dungeons.create: true
+      dungeonbuilder.dungeons.teleport: true
+      dungeonbuilder.worlds.teleport: true
+      dungeonbuilder.worlds.create: true
+      dungeonbuilder.dungeons.query: true
+      dungeonbuilder.dungeons.save: true
+      dungeonbuilder.dungeons.load: true
+      dungeonbuilder.dungeons.setstart: true
+      dungeonbuilder.dungeons.setexit: true
+      dungeonbuilder.dungeons.delete: true
+      dungeonbuilder.dungeons.publish: true
+      dungeonbuilder.dungeons.unpublish: true
+      dungeonbuilder.dungeons.addmonster: true
+      dungeonbuilder.dungeons.removemonster: true
+      dungeonbuilder.dungeons.killmonsters: true
+      dungeonbuilder.dungeons.spawnmonsters: true
+      dungeonbuilder.dungeons.clear: true
+      dungeonbuilder.dungeons.setreward: true
+      dungeonbuilder.dungeons.admin: true
+      dungeonbuilder.dungeons.trigger: true
+      dungeonbuilder.dungeons.script: true
+      dungeonbuilder.dungeons.export: true
+      dungeonbuilder.dungeons.import: true
+      dungeonbuilder.dungeons.savepoint: true
+      dungeonbuilder.dungeons.start: true
+      dungeonbuilder.party.kick: true
+      dungeonbuilder.party.query: true
+      dungeonbuilder.party.create: true
+  dungeonbuilder.dungeons.*:
+    description: Dungeon builder commands related to dungeons
+    children:
+      dungeonbuilder.dungeons.create: true
+      dungeonbuilder.dungeons.teleport: true
+      dungeonbuilder.dungeons.query: true
+      dungeonbuilder.dungeons.save: true
+      dungeonbuilder.dungeons.load: true
+      dungeonbuilder.dungeons.setstart: true
+      dungeonbuilder.dungeons.setexit: true
+      dungeonbuilder.dungeons.delete: true
+      dungeonbuilder.dungeons.publish: true
+      dungeonbuilder.dungeons.unpublish: true
+      dungeonbuilder.dungeons.addmonster: true
+      dungeonbuilder.dungeons.removemonster: true
+      dungeonbuilder.dungeons.killmonsters: true
+      dungeonbuilder.dungeons.spawnmonsters: true
+      dungeonbuilder.dungeons.clear: true
+      dungeonbuilder.dungeons.setreward: true
+      dungeonbuilder.dungeons.admin: true
+      dungeonbuilder.dungeons.trigger: true
+      dungeonbuilder.dungeons.script: true
+      dungeonbuilder.dungeons.export: true
+      dungeonbuilder.dungeons.import: true
+      dungeonbuilder.dungeons.savepoint: true
+      dungeonbuilder.dungeons.start: true
+  dungeonbuilder.worlds.*:
+    description: Commands related to world management
+    children:
+      dungeonbuilder.worlds.teleport: true
+      dungeonbuilder.worlds.create: true
+  dungeonbuilder.party.*:
+    description: Commands related to party management
+    children:
+      dungeonbuilder.party.kick: true
+      dungeonbuilder.party.query: true
+      dungeonbuilder.party.create: true
+  dungeonbuilder.dungeons.create:
+    description: Commands related to dungeon creation
+    default: op
+  dungeonbuilder.dungeons.teleport:
+    description: Commands related to teleporting to/from dungeons
+    default: op
+  dungeonbuilder.worlds.teleport:
+    description: Commands related to teleporting between worlds
+    default: op
+  dungeonbuilder.dungeons.query:
+    description: Commands related to querying dungeon information
+    default: op
+  dungeonbuilder.dungeons.save:
+    description: The ability to save dungeons
+    default: op
+  dungeonbuilder.dungeons.load:
+    description: The ability to load saved dungeons
+    default: op
+  dungeonbuilder.dungeons.setstart:
+    description: Setting the starting location for the dungeon
+    default: op
+  dungeonbuilder.dungeons.setexit:
+    description: Setting the exit location for the dungeon
+    default: op
+  dungeonbuilder.dungeons.delete:
+    description: The ability to delete the dungeon
+    default: op
+  dungeonbuilder.dungeons.publish:
+    description: The ability to publish dungeons
+    default: op
+  dungeonbuilder.dungeons.unpublish:
+    description: The ability to unpublish dungeons
+    default: op
+  dungeonbuilder.dungeons.addmonster:
+    description: Adding monster spawns to dungeons
+    default: op
+  dungeonbuilder.dungeons.removemonster:
+    description: Removing monster spawns from dungeons
+    default: op
+  dungeonbuilder.dungeons.killmonsters:
+    description: Killing spawned monsters in the dungeon
+    default: op
+  dungeonbuilder.dungeons.spawnmonsters:
+    description: Spawning monsters in the dungeon
+    default: op
+  dungeonbuilder.dungeons.clear:
+    description: Clearing dungeon contents
+    default: op
+  dungeonbuilder.dungeons.setreward:
+    description: Setting dungeon rewards
+    default: op
+  dungeonbuilder.dungeons.admin:
+    description: Administrative commands
+    default: op
+  dungeonbuilder.dungeons.trigger:
+    description: Controlling dungeon triggers
+    default: op
+  dungeonbuilder.dungeons.script:
+    description: Commands related to dungeon scripts
+    default: op
+  dungeonbuilder.dungeons.export:
+    description: Exporting dungeons to a template
+    default: op
+  dungeonbuilder.dungeons.import:
+    description: Importing dungeons from a template
+    default: op
+  dungeonbuilder.dungeons.savepoint:
+    description: Setting save points for the dungeon
+    default: op
+  dungeonbuilder.party.create:
+    description: Creating or disbanding parties
+    default: op
+  dungeonbuilder.party.query:
+    description: Listing party details
+    default: op
+  dungeonbuilder.party.kick:
+    description: Kicking players from the party
+    default: op
+  dungeonbuilder.worlds.create:
+    description: Creating new worlds
+    default: op
+  dungeonbuilder.worlds.teleport:
+    description: Teleporting to different worlds
+    default: op
+  dungeonbuilder.dungeons.start:
+    description: Permission required to start or queue for dungeons remotely
+    default: op
+commands:
+  db:
+    description: Main command
+    usage: /db
+  createEmptyDungeon:
+    description: Creates a basic dungeon shell with hollowed center
+    usage: /createEmptyDungeon name width length height [type]
+    permission: dungeonbuilder.dungeons.create
+  createDungeon:
+    description: Creates a basic dungeon shell but leaves center intact
+    usage: /createDungeon name width length height [type]
+    permission: dungeonbuilder.dungeons.create
+  createWorld:
+    description: Creates or Loads the specified world
+    usage: /createWorld name type
+    permission: dungeonbuilder.worlds.create
+  teleportToWorld:
+    description: Teleport to the spawn location of the world
+    usage: /teleportToWorld name
+    permission: dungeonbuilder.worlds.teleport
+  teleportToDungeon:
+    description: Teleports the player to the dungeon
+    usage: /teleportToDungeon name
+    permission: dungeonbuilder.dungeons.teleport
+  teleportToDungeonCenter:
+    description: Teleport to the center of the bottom floor of the dungeon
+    usage: /teleportToDungeonCenter name
+    permission: dungeonbuilder.dungeons.teleport
+  teleportOutsideDungeon:
+    description: Teleport the player to a location outside the dungeon
+    usage: /teleportOutsideDungeon name
+    permission: dungeonbuilder.dungeons.teleport
+  viewDungeonParameters:
+    description: Display the parameters used to create the dungeon
+    usage: /viewDungeonParameters name
+    permission: dungeonbuilder.dungeons.query
+  listDungeons:
+    description: Lists player created dungeons
+    usage: /listDungeons
+    permission: dungeonbuilder.dungeons.query
+  saveDungeon:
+    description: Saves the layout of the dungeon
+    usage: /saveDungeon name
+    permission: dungeonbuilder.dungeons.save
+  loadDungeon:
+    description: Load the previously saved layout of the dungeon
+    usage: /loadDungeon name
+    permission: dungeonbuilder.dungeons.load
+  setDungeonStart:
+    description: Change the starting location for the dungeon
+    usage: /setDungeonStart name
+    permission: dungeonbuilder.dungeons.setstart
+  setDungeonExit:
+    description: Change the exit location for the dungeon
+    usage: /setDungeonExit name
+    permission: dungeonbuilder.dungeons.setexit
+  setDungeonExitDestination:
+    description: Sets the exit destination for the dungeon's exit teleporter
+    usage: /setDungeonExitDestination name
+    permission: dungeonbuilder.dungeons.setexit
+  deleteDungeon:
+    description: Deletes a dungeon from the server permanently
+    usage: /deleteDungeon name [clear]
+    permission: dungeonbuilder.dungeons.delete
+  publishDungeon:
+    description: Publishes a dungeon for use by general population
+    usage: /publishDungeon name
+    permission: dungeonbuilder.dungeons.publish
+  unpublishDungeon:
+    description: Remove a dungeon from use by general population
+    usage: /unpublishDungeon name
+    permission: dungeonbuilder.dungeons.unpublish
+  teleportToSpawn:
+    description: Teleports the player to their spawnpoint
+    usage: /teleportToSpawn
+    permission: dungeonbuilder.worlds.teleport
+  addMonsterSpawn:
+    description: Sets a monster spawn point in the dungeon
+    usage: /addMonsterSpawn alias type dungeon [count]
+    permission: dungeonbuilder.dungeons.addmonster
+  removeMonsterSpawn:
+    description: Removes a monster spawn point from the dungeon
+    usage: /removeMonsterSpawn alias dungeon
+    permission: dungeonbuilder.dungeons.removemonster
+  listMonsterSpawns:
+    description: List the saved monster spawn points in the dungeon
+    usage: /listMonsterSpawns dungeon
+    permission: dungeonbuilder.dungeons.query
+  spawnMonsters:
+    description: Spawn all saved monster spawnpoints in the dungeon
+    usage: /spawnMonsters dungeon
+    permission: dungeonbuilder.dungeons.spawnmonsters
+  killMonsters:
+    description: Kill all spawned monsters in the dungeon
+    usage: /killMonsters dungeon
+    permission: dungeonbuilder.dungeons.killmonsters
+  clearDungeon:
+    description: Clears out the contents of the dungeon
+    usage: /clearDungeon dungeon
+    permission: dungeonbuilder.dungeons.clear
+  clearLiquids:
+    description: Clears out liquid matter from the dungeon
+    usage: /clearDungeon dungeon
+    permission: dungeonbuilder.dungeons.clear
+  clearTorches:
+    description: Clears out the torches in the dungeon
+    usage: /clearTorches dungeon
+    permission: dungeonbuilder.dungeons.clear
+  setDungeonReward:
+    description: Set the amount to award players for finishing the dungeon
+    usage: /setDungeonReward dungeon amount
+    permission: dungeonbuilder.dungeons.setreward
+  showDungeonReward:
+    description: Displays the current reward amount for the dungeon
+    usage: /showDungeonReward dungeon
+    permission: dungeonbuilder.dungeons.query
+  playerIsNotInDungeon:
+    description: Disables the players 'in dungeon' status
+    usage: /playerIsNotInDungeon player
+    permission: dungeonbuilder.dungeons.admin
+  setFirstDungeonMarker:
+    description: Sets the first marker for dungeon creation
+    usage: /setFirstDungeonMarker
+    permission: dungeonbuilder.dungeons.create
+  setSecondDungeonMarker:
+    description: Sets the second marker for dungeon creation
+    usage: /setSecondDungeonMarker
+    permission: dungeonbuilder.dungeons.create
+  createDungeonFromMarkers:
+    description: Creates a dungeon from the previously set markers
+    usage: /createDungeonFromMarkers alias [type]
+    permission: dungeonbuilder.dungeons.create
+  undoDungeonCreation:
+    description: Reverts the creation of the dungeon shell
+    usage: /undoDungeonCreation alias
+    permission: dungeonbuilder.dungeons.create
+  addDefaultDungeonPermission:
+    description: Adds the permission node to the list of allowed permissions by default for the dungeon
+    usage: /addDefaultDungeonPermission alias node
+    permission: dungeonbuilder.dungeons.admin
+  removeDefaultDungeonPermission:
+    description: Removes the permission node from the list of allowed permissions by default for the dungeon
+    usage: /removeDefaultDungeonPermissions alias node
+    permission: dungeonbuilder.dungeons.admin
+  clearDefaultDungeonPermissions:
+    description: Clears out the list of default permissions for the dungeon
+    usage: /clearDefaultDungeonPermissions alias
+    permission: dungeonbuilder.dungeons.admin
+  listDefaultDungeonPermissions:
+    description: Lists the default dungeon permissions for the dungeon
+    usage: /listDefaultDungeonPermissions alias
+    permission: dungeonbuilder.dungeons.query
+  leaveDungeon:
+    description: Removes player from current dungeon or dungeon queue
+    usage: /leaveDungeon
+  setPartySize:
+    description: Set the size of parties for the dungeon
+    usage: /setPartySize alias size
+    permission: dungeonbuilder.dungeons.admin
+  toggleAutoload:
+    description: Toggle's the autoload functionality for the dungeon
+    usage: /toggleAutoload alias true|false
+    permission: dungeonbuilder.dungeons.admin
+  addMonsterTrigger:
+    description: Adds a trigger for spawning monsters
+    usage: /addMonsterTrigger trigger-alias dungeon-alias monster-alias [block-count]
+    permission: dungeonbuilder.dungeons.trigger
+  removeMonsterTrigger:
+    description: Removes a monster trigger
+    usage: /removeMonsterTrigger trigger-alias dungeon-alias
+    permission: dungeonbuilder.dungeons.trigger
+  listMonsterTriggers:
+    description: Lists the monster triggers for the dungeon
+    usage: /listMonsterTriggers dungeon-alias
+    permission: dungeonbuilder.dungeons.query
+  resetTriggers:
+    description: Reset the dungeon's triggers
+    usage: /resetTriggers dungeon-alias
+    permission: dungeonbuilder.dungeons.trigger
+  addSavePoint:
+    description: Adds a save point to the dungeon
+    usage: /addSavePoint savepoint-alias dungeon-alias [block-count]
+    permission: dungeonbuilder.dungeons.savepoint
+  removeSavePoint:
+    description: Removes a save point from the dungeon
+    usage: /removeSavePoint savepoint-alias dungeon-alias
+    permission: dungeonbuilder.dungeons.savepoint
+  listSavePoints:
+    description: Lists save points for the dungeon
+    usage: /listSavePoints dungeon-alias
+    permission: dungeonbuilder.dungeons.query
+  continueDungeon:
+    description: Teleports the player back to the dungeon they are currently running
+    usage: /continueDungeon
+  addScriptTrigger:
+    description: Adds a script trigger to the dungeon
+    usage: /addScriptTrigger trigger-alias dungeon-alias script-function [block-count]
+    permission: dungeonbuilder.dungeons.script
+  removeScriptTrigger:
+    description: Remove a script trigger from the dungeon
+    usage: /removeScriptTrigger trigger-alias dungeon-alias
+    permission: dungeonbuilder.dungeons.script
+  listScriptTriggers:
+    description: Lists the currently set script triggers for the dungeon
+    usage: /listScriptTriggers dungeon-alias
+    permission: dungeonbuilder.dungeons.query
+  createDungeonTemplate:
+    description: Saves the dungeon file to an exportable template file
+    usage: /createDungeonTemplate dungeon-alias [template-name]
+    permission: dungeonbuilder.dungeons.export
+  createDungeonFromTemplate:
+    description: Creates a dungeon from a premade template file
+    usage: /createDungeonFromTemplate template-name dungeon-alias
+    permission: dungeonbuilder.dungeons.import
+  listTemplates:
+    description: Lists available dungeon templates
+    usage: /listTemplates
+    permission: dungeonbuilder.dungeons.import
+  listParty:
+    description: List members in the party
+    usage: /listParty
+    permission: dungeonbuilder.party.query
+  kickPartyMember:
+    description: Removes a member from the party
+    usage: /kickPartyMember playername
+    permission: dungeonbuilder.party.kick
+  addPartyMember:
+    description: Adds player to the party (creating the party if it doesn't exist)
+    usage: /addPartyMember membername
+    permission: dungeonbuilder.party.create
+  disbandParty:
+    description: Disbands the player's party
+    usage: /disbandParty
+    permission: dungeonbuilder.party.create
+  leaveParty:
+    description: Leave the current party
+    usage: /leaveParty
+  acceptInvite:
+    description: Accept the latest party invite
+    usage: /acceptInvite
+  startDungeon:
+    description: Queue/Start a dungeon
+    usage: /startDungeon dungeonName [ownerName]
+    permission: dungeonbuilder.dungeons.start
+
