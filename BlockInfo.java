@@ -85,6 +85,24 @@ public class BlockInfo implements Comparable<BlockInfo>
 			case WALL_SIGN:
 			case WOOD_DOOR:
 			case WOODEN_DOOR:
+			case SAPLING:
+			case DETECTOR_RAIL:
+			case WEB:
+			case DEAD_BUSH:
+			case LONG_GRASS:
+			case YELLOW_FLOWER:
+			case RED_ROSE:
+			case BROWN_MUSHROOM:
+			case RED_MUSHROOM:
+			case CROPS:
+			case STONE_PLATE:
+			case WOOD_PLATE:
+			case SUGAR_CANE_BLOCK:
+			case DIODE_BLOCK_OFF:
+			case DIODE_BLOCK_ON:
+			case VINE:
+			case STORAGE_MINECART:
+			case POWERED_MINECART:
 				return true;
 			default:
 				return false;
@@ -123,15 +141,25 @@ public class BlockInfo implements Comparable<BlockInfo>
 		isLiquid = isLiquid();
 		isLiquid2 = bi2.isLiquid();
 
+		//Sugar cane needs to be loaded last since water needs to be present first
+		if(m == Material.SUGAR_CANE_BLOCK && bi2.getType() != Material.SUGAR_CANE_BLOCK)
+			return 1;
+		if(m != Material.SUGAR_CANE_BLOCK && bi2.getType() == Material.SUGAR_CANE_BLOCK)
+			return -1;
+
+		//Load liquids last (but before sugar canes)
+		if(isLiquid && !isLiquid2)
+			return 1;
+		if(!isLiquid && isLiquid2)
+			return -1;
+
+		//Load redstone torches first (before wires and other redstone related objects)
 		if(isRedstoneTorch() && !bi2.isRedstoneTorch())
 			return -1;
 		if(!isRedstoneTorch() && bi2.isRedstoneTorch())
 			return 1;
 
-		if(isLiquid && !isLiquid2)
-			return 1;
-		if(!isLiquid && isLiquid2)
-			return -1;
+		//Everything else gets loaded based on if it is an attachable object or not.
 		if(isLiquid == isLiquid2)
 		{
 			if(isAttachable() && bi2.isAttachable())
