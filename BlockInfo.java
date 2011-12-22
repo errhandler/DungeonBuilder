@@ -3,6 +3,7 @@ package net.virtuallyabstract.minecraft;
 import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.material.*;
+import org.bukkit.entity.*;
 import java.util.*;
 
 public class BlockInfo implements Comparable<BlockInfo>
@@ -11,6 +12,7 @@ public class BlockInfo implements Comparable<BlockInfo>
 	private Material m;
 	private Byte data;
 	private String metaStr = null;
+	private Entity entity = null;
 
 	public BlockInfo(Block b)
 	{
@@ -28,6 +30,12 @@ public class BlockInfo implements Comparable<BlockInfo>
 
 	public void setBlock()
 	{
+		if(metaStr != null && metaStr.startsWith("ENTITY"))
+		{
+			setEntity();
+			return;
+		}
+
 		if(m == null)
 			return;
 
@@ -51,6 +59,54 @@ public class BlockInfo implements Comparable<BlockInfo>
 		}
 	}
 
+	public Entity getEntity()
+	{
+		return entity;
+	}
+	
+	public void setEntity(Entity e)
+	{
+		this.entity = e;
+	}
+
+	private void setEntity()
+	{
+		if(b == null)
+			return;
+
+		World w = b.getWorld();
+		if(w == null)
+			return;
+
+		String clazz = metaStr.replace("ENTITY(", "");
+		clazz = clazz.replace(")", "");
+
+		if(clazz.contains("org.bukkit.craftbukkit.entity.CraftMinecart"))
+			clazz = "org.bukkit.entity.Minecart";
+		else if(clazz.contains("org.bukkit.craftbukkit.entity.CraftPoweredMinecart"))
+			clazz = "org.bukkit.entity.PoweredMinecart";
+		else if(clazz.contains("org.bukkit.craftbukkit.entity.CraftStorageMinecart"))
+			clazz = "org.bukkit.entity.StorageMinecart";
+		else
+			return;
+
+		try
+		{
+			if(entity != null)
+			{
+				entity.remove();
+				entity = null;
+			}
+
+			@SuppressWarnings("unchecked")
+			Class<? extends org.bukkit.entity.Entity> entityClass = (Class<? extends org.bukkit.entity.Entity>)Class.forName(clazz);
+			entity = w.spawn(b.getLocation(), entityClass);
+		}
+		catch(Exception e)
+		{
+		}
+	}
+
 	public Block getBlock()
 	{
 		return b;
@@ -64,6 +120,11 @@ public class BlockInfo implements Comparable<BlockInfo>
 	public void setMetaString(String metaStr)
 	{
 		this.metaStr = metaStr;
+	}
+
+	public String getMetaString()
+	{
+		return metaStr;
 	}
 
 	public boolean isAttachable()

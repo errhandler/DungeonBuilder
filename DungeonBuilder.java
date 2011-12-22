@@ -237,6 +237,7 @@ public class DungeonBuilder extends JavaPlugin
 			for(Dungeon d : dungeonMap.get(key))
 			{
 				d.killMonsters();
+				d.clearEntities();
 			}
 		}
 

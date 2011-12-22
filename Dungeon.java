@@ -337,6 +337,19 @@ public class Dungeon implements Comparable<Dungeon>
 				}
 			}
 
+			for(Entity e : world.getEntities())
+			{
+				Location eloc = e.getLocation();
+				if(!containsLocation(eloc))
+					continue;
+
+				Block eblock = eloc.getBlock();
+				BlockInfo bi = new BlockInfo(eblock);
+				bi.setMetaString("ENTITY("+ e.getClass().toString() + ")");
+				bi.setEntity(e);
+				blocks.add(bi);
+			}
+
 			Collections.sort(blocks);
 		}
 
@@ -411,6 +424,17 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 
 		refreshExitBlock();
+	}
+
+	public void clearEntities()
+	{
+		for(BlockInfo bi : blocks)
+		{
+			if(bi.getEntity() == null)
+				continue;
+
+			bi.getEntity().remove();
+		}
 	}
 
 	public void clearTorches()
@@ -550,6 +574,10 @@ public class Dungeon implements Comparable<Dungeon>
 					{
 						metaStr = createSignString((org.bukkit.block.Sign)bs);
 					}
+
+					//For saving entities
+					if(metaStr == null && bi.getMetaString() != null)
+						metaStr = bi.getMetaString();
 
 					if(metaStr == null)
 						pw.print(createLocationString(loc, relative) + "," + m.getId() + "," +  b.getData() + "\n");
