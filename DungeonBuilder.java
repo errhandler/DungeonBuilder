@@ -2407,7 +2407,7 @@ public class DungeonBuilder extends JavaPlugin
 			Player ptemp = server.getPlayer(dpname);
 			addPlayerToDungeon(dpname, d);
 			clearSavePoint(dpname);
-			ScriptManager.runDungeonStartScript(d, server, ptemp);
+			ScriptManager.runDungeonStartScript(d, server, ptemp, this);
 
 			if(!isPlayerStillInDungeon(ptemp))
 				ptemp.teleport(loc);
@@ -2727,7 +2727,7 @@ public class DungeonBuilder extends JavaPlugin
 				if(d.getAutoload())
 					d.loadDungeon();
 				d.killMonsters();
-				ScriptManager.runDungeonExitScript(d, server, player);
+				ScriptManager.runDungeonExitScript(d, server, player, this);
 
 				for(LocationWrapper mt1 : d.listMonsterTriggers())
 					mt1.setActive(true);

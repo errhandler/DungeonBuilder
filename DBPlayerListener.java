@@ -152,7 +152,7 @@ public class DBPlayerListener extends PlayerListener
 						if(lworig.isActive())
 						{
 							System.out.println("Running script - " + lworig.getMetaData());
-							ScriptManager.runScript(d, plugin.server, p, lworig.getMetaData());	
+							ScriptManager.runScript(d, plugin.server, p, plugin, lworig.getMetaData());	
 							lworig.setActive(false);
 						}
 					default:

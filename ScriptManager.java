@@ -4,6 +4,7 @@ import javax.script.*;
 import java.io.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
+import org.bukkit.plugin.*;
 
 public class ScriptManager
 {
@@ -36,17 +37,17 @@ public class ScriptManager
 		return null;
 	}
 
-	public static void runDungeonStartScript(Dungeon d, Server s, Player p)
+	public static void runDungeonStartScript(Dungeon d, Server s, Player p, Plugin plugin)
 	{
-		runScript(d, s, p, "dungeon_start");
+		runScript(d, s, p, plugin, "dungeon_start");
 	}
 
-	public static void runDungeonExitScript(Dungeon d, Server s, Player p)
+	public static void runDungeonExitScript(Dungeon d, Server s, Player p, Plugin plugin)
 	{
-		runScript(d, s, p, "dungeon_exit");
+		runScript(d, s, p, plugin, "dungeon_exit");
 	}
 
-	public static void runScript(Dungeon d, Server s, Player p, String methodName)
+	public static void runScript(Dungeon d, Server s, Player p, Plugin plugin, String methodName)
 	{
 		String script = findDungeonScript(d);
 		if(script == null)
@@ -67,6 +68,7 @@ public class ScriptManager
 		engine.put("dungeon", d);
 		engine.put("server", s);
 		engine.put("player", p);
+		engine.put("plugin", plugin);
 		try
 		{
 			engine.eval(new FileReader(script));
