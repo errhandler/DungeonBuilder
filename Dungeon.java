@@ -10,6 +10,7 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.command.*;
 import org.bukkit.material.*;
+import org.bukkit.enchantments.*;
 import javax.script.*;
 import java.util.*;
 import java.io.*;
@@ -1001,7 +1002,16 @@ public class Dungeon implements Comparable<Dungeon>
 			if(is == null)
 				continue;
 
-			String item = is.getTypeId() + ":" + is.getAmount() + ":" + is.getDurability();
+			Map<Enchantment, Integer> enchantments = is.getEnchantments();
+			String enchs = "";
+			for(Enchantment en : enchantments.keySet())
+			{
+				if(enchs.length() > 0)
+					enchs = enchs + "#";
+				enchs = enchs + en.getId() + "-" + enchantments.get(en);
+			}
+
+			String item = is.getTypeId() + ":" + is.getAmount() + ":" + is.getDurability() + ":" + enchs;
 			retVal.append(item + ";");
 		}
 		retVal.append(")");
@@ -1033,6 +1043,22 @@ public class Dungeon implements Comparable<Dungeon>
 				ItemStack is = new ItemStack(typeId);
 				is.setAmount(amount);
 				is.setDurability(durability);
+
+				if(itemData.length == 4)
+				{
+					String enchantmentStr = itemData[3];
+					String [] enchs = enchantmentStr.split("#");
+					for(String ench : enchs)
+					{
+						String [] enchComps = ench.split("-");
+						if(enchComps.length < 2)
+							continue;
+
+						int enchId = Integer.parseInt(enchComps[0]);
+						int enchLevel = Integer.parseInt(enchComps[1]);
+						is.addEnchantment(Enchantment.getById(enchId), enchLevel);
+					}
+				}
 
 				i.addItem(is);
 			}
