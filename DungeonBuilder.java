@@ -1687,11 +1687,11 @@ public class DungeonBuilder extends JavaPlugin
 			{
 				try
 				{
-					blockCount = Integer.parseInt(args[2]);
+					blockCount = Integer.parseInt(args[3]);
 				}
 				catch(Exception e)
 				{
-					sender.sendMessage("Invalid argument: " + args[2]);
+					sender.sendMessage("Invalid argument: " + args[3]);
 					return false;
 				}
 			}
