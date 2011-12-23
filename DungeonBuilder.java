@@ -2182,6 +2182,60 @@ public class DungeonBuilder extends JavaPlugin
 
 		}
 
+		if(label.equals("setexpreward") && checkPermission(player, "dungeonbuilder.dungeons.expreward"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			try
+			{
+				int exp = Integer.parseInt(args[1]);
+				d.setExpReward(exp);
+				sender.sendMessage("Exp reward for dungeon '" + alias + "' set to " + exp);
+			}
+			catch(Exception e)
+			{
+				sender.sendMessage("Invalid exp amount: " + args[1]);
+				return false;
+			}
+		}
+
+		if(label.equals("showexpreward") && checkPermission(player, "dungeonbuilder.dungeons.expreward"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			int exp = d.getExpReward();
+			if(exp > 0)
+				sender.sendMessage("Current exp reward set to " + exp + " for dungeon '" + alias + "'");
+			else
+				sender.sendMessage("There is currently no exp reward for dungeon '" + alias + "'");
+		}
+
 		return true;
 	}
 

@@ -282,6 +282,7 @@ public class DBPlayerListener extends PlayerListener
 										break;
 									case DUNGEON_EXIT:
 										plugin.rewardPlayer(p, d);
+										d.rewardPlayerExp(p);
 										plugin.removePlayerFromDungeon(p, true);	
 										teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
 										//if(d.getAutoload())

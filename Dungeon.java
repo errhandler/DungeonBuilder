@@ -21,7 +21,7 @@ public class Dungeon implements Comparable<Dungeon>
 	private DungeonBuilder plugin;
 	private String owner, name;
 	private Location start, center, exit, teleporter, exitdest, sphereCenter;
-	private int width, depth, height;
+	private int width, depth, height, exp = -1;
 	private ArrayList<BlockInfo> blocks, origBlocks = null;
 	private ArrayList<Entity> liveMonsters;
 	private ArrayList<String> defaultPermissions;
@@ -538,6 +538,8 @@ public class Dungeon implements Comparable<Dungeon>
 			pw.print("World:" + world.getName() + "," + world.getEnvironment().getId() + "\n");
 			pw.print("PartySize:" + partySize + "\n");
 			pw.print("Reward:" + reward + "\n");
+			if(exp > 0)
+				pw.print("ExpReward:" + exp + "\n");
 			pw.print("Autoload:" + autoload + "\n");
 			if(published)
 			{
@@ -688,6 +690,16 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 		else
 			reward = 0.0;
+
+		if(line.startsWith("ExpReward:"))
+		{
+			String temp = line.substring(10);
+			this.exp = Integer.parseInt(temp);
+
+			line = br.readLine();
+		}
+		else
+			exp = -1;
 
 		if(line.startsWith("Autoload:"))
 		{
@@ -1474,6 +1486,22 @@ public class Dungeon implements Comparable<Dungeon>
 	//{
 	//	return new ArrayList<Player>(currentPlayers);
 	//}
+
+	public void setExpReward(int reward)
+	{
+		this.exp = reward;
+	}
+
+	public int getExpReward()
+	{
+		return exp;
+	}
+
+	public void rewardPlayerExp(Player p)
+	{
+		if(exp > 0)
+			p.giveExp(exp);
+	}
 
 	public void toggleAutoload(boolean enabled)
 	{

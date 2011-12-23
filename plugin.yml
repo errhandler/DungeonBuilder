@@ -34,6 +34,7 @@ permissions:
       dungeonbuilder.dungeons.import: true
       dungeonbuilder.dungeons.savepoint: true
       dungeonbuilder.dungeons.start: true
+      dungeonbuilder.dungeons.expreward: true
       dungeonbuilder.party.kick: true
       dungeonbuilder.party.query: true
       dungeonbuilder.party.create: true
@@ -63,6 +64,7 @@ permissions:
       dungeonbuilder.dungeons.import: true
       dungeonbuilder.dungeons.savepoint: true
       dungeonbuilder.dungeons.start: true
+      dungeonbuilder.dungeons.expreward: true
   dungeonbuilder.worlds.*:
     description: Commands related to world management
     children:
@@ -405,4 +407,12 @@ commands:
     description: Queue/Start a dungeon
     usage: /startDungeon dungeonName [ownerName]
     permission: dungeonbuilder.dungeons.start
+  setExpReward:
+    description: Set the Exp reward for when players complete the dungeon
+    usage: /setExpReward alias amount
+    permission: dungeonbuilder.dungeons.expreward
+  showExpReward:
+    description: Display the current exp reward for the dungeon
+    usage: /showExpReward alias
+    permission: dungeonbuilder.dungeons.expreward
 
