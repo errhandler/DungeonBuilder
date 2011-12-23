@@ -91,6 +91,15 @@
 			<Argument name="alias" description="The alias of the dungeon to toggle autoload on"/>
 			<Argument name="enabled" description="Set autoload status for the dungeon (true = on, false = off)" default="true"/>
 		</Command>
+		<Category name="exp" description="Commands for managing exp reward">
+			<Command name="set" command="setexpreward" description="Set the exp reward">
+				<Argument name="alias" description="The dungeon alias to set the exp reward for"/>
+				<Argument name="amount" description="The amount of exp to reward"/>
+			</Command>
+			<Command name="show" command="showexpreward" description="Display the current exp reward">
+				<Argument name="alias" description="The dungeon alias to set the exp reward for"/>
+			</Command>
+		</Category>
 		<Category name="monsters" description="Commands for managing monster spawnpoints">
 			<Command name="add" command="addmonsterspawn" description="Add a monster spawn point">
 				<Argument name="alias" description="The alias used to refer to this spawn point"/>
