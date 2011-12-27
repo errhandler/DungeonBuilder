@@ -181,6 +181,34 @@ public class DBPlayerListener extends PlayerListener
 							continue lwloop;
 						}
 
+						StringBuffer cooldownbuffer = new StringBuffer();
+						for(String pname : dp.listMembers())
+						{
+							if(!d.isPlayerOnCooldown(pname))
+								continue;
+
+							Long timeleft = d.timeLeftOnCooldown(pname);
+							if(timeleft >= 0)
+							{
+								timeleft = timeleft / 1000;
+								cooldownbuffer.append(pname + " - " + timeleft + " seconds\n");
+							}
+							else
+							{
+								cooldownbuffer.append(pname + " - Never\n");
+							}
+						}
+
+						if(cooldownbuffer.length() > 0)
+						{
+							p.sendMessage("Unable to queue for dungeon.  The following party members");
+							p.sendMessage("still have active cooldowns:");
+							for(String line : cooldownbuffer.toString().split("\n"))
+								p.sendMessage(line);
+							teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
+							continue lwloop;
+						}
+
 						status = d.addParty(dp);
 
 						switch(status)

@@ -22,10 +22,12 @@ public class Dungeon implements Comparable<Dungeon>
 	private String owner, name;
 	private Location start, center, exit, teleporter, exitdest, sphereCenter;
 	private int width, depth, height, exp = -1;
+	private long dungeonCooldown = 0;
 	private ArrayList<BlockInfo> blocks, origBlocks = null;
 	private ArrayList<Entity> liveMonsters;
 	private ArrayList<String> defaultPermissions;
 	private ArrayList<MonsterInfo> savedMonsters;
+	private HashMap<String, Long> playerCooldowns;
 	private HashMap<String, LocationWrapper> monsterTriggers, scriptTriggers, savePoints;
 	private volatile boolean published, autoload = true, allowSpawn = false;
 	private double reward, sphereRadius;
@@ -49,6 +51,7 @@ public class Dungeon implements Comparable<Dungeon>
 		monsterTriggers = new HashMap<String, LocationWrapper>();
 		scriptTriggers = new HashMap<String, LocationWrapper>();
 		savePoints = new HashMap<String, LocationWrapper>();
+		playerCooldowns = new HashMap<String, Long>();
 		currentStatus = PartyStatus.EMPTY;
 	}
 
@@ -309,6 +312,133 @@ public class Dungeon implements Comparable<Dungeon>
 		return defaultPermissions.contains(node);
 	}
 
+	public void setCooldown(long cooldown)
+	{
+		dungeonCooldown = cooldown;
+	}
+
+	public long getCooldown()
+	{
+		return dungeonCooldown;
+	}
+
+	public void addPlayerCooldown(Player p)
+	{
+		addPlayerCooldown(p.getName());
+	}
+
+	public void addPlayerCooldown(String playername)
+	{
+		playerCooldowns.put(playername, System.currentTimeMillis());	
+	}
+
+	public void clearPlayerCooldown(String playername)
+	{
+		playerCooldowns.remove(playername);
+	}
+
+	public boolean isPlayerOnCooldown(Player p)
+	{
+		return isPlayerOnCooldown(p.getName());
+	}
+
+	public boolean isPlayerOnCooldown(String playername)
+	{
+		if(!playerCooldowns.containsKey(playername))
+			return false;
+
+		if(dungeonCooldown == -1)
+			return true;
+
+		Long cooldown = playerCooldowns.get(playername);
+		Long current = System.currentTimeMillis();
+
+		if(current - cooldown > dungeonCooldown)
+		{
+			playerCooldowns.remove(playername);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	//In milliseconds
+	public long timeLeftOnCooldown(Player p)
+	{
+		return timeLeftOnCooldown(p.getName());
+	}
+
+	public long timeLeftOnCooldown(String playername)
+	{
+		if(!playerCooldowns.containsKey(playername))
+			return 0;
+
+		if(dungeonCooldown == -1)
+			return -1;
+
+		Long cooldown = playerCooldowns.get(playername);
+		Long current = System.currentTimeMillis();
+
+		Long remaining = dungeonCooldown - (current - cooldown);
+		if(remaining > 0)
+			return remaining;
+		else
+			return 0;
+	}
+
+	public void saveCooldowns()
+		throws Exception
+	{
+		createDirectory();
+
+		File cooldownFile = new File(DungeonBuilder.dungeonRoot + "/" + owner + "/" + name + ".cooldowns");
+		PrintWriter pw = null;
+		try
+		{
+			pw = new PrintWriter(new FileWriter(cooldownFile));
+			for(String name : playerCooldowns.keySet())
+			{
+				Long amount = playerCooldowns.get(name);
+				pw.print(name + ":" + amount + "\n");
+			}
+		}
+		finally
+		{
+			if(pw != null)
+				pw.close();
+		}
+	}
+
+	public void loadCooldowns()
+		throws Exception
+	{
+		File cooldownFile = new File(DungeonBuilder.dungeonRoot + "/" + owner + "/" + name + ".cooldowns");
+		if(!cooldownFile.exists())
+			return;
+
+		BufferedReader br = null;
+		try
+		{
+			br = new BufferedReader(new FileReader(cooldownFile));
+			String line = null;
+			while((line = br.readLine()) != null)
+			{
+				String [] comps = line.split(":");
+				if(comps.length < 2)
+					continue;
+
+				String name = comps[0];
+				Long amount = Long.parseLong(comps[1]);
+				playerCooldowns.put(name, amount);
+			}
+		}
+		finally
+		{
+			if(br != null)
+				br.close();
+		}
+	}
+
 	public void saveDungeon()
 		throws Exception
 	{
@@ -499,7 +629,7 @@ public class Dungeon implements Comparable<Dungeon>
 		return DungeonBuilder.dungeonRoot + "/" + owner + "/" + name;
 	}
 
-	public void saveToFile()
+	private void createDirectory()
 		throws Exception
 	{
 		File playerDir = new File(DungeonBuilder.dungeonRoot + "/" + owner);
@@ -508,6 +638,12 @@ public class Dungeon implements Comparable<Dungeon>
 			if(!playerDir.mkdirs())
 				throw new Exception("Failed to make directory: " + playerDir.getPath());
 		}
+	}
+
+	public void saveToFile()
+		throws Exception
+	{
+		createDirectory();
 
 		File dungeonFile = new File(DungeonBuilder.dungeonRoot + "/" + owner + "/" + name);
 		if(dungeonFile.exists())
@@ -540,6 +676,7 @@ public class Dungeon implements Comparable<Dungeon>
 			pw.print("Reward:" + reward + "\n");
 			if(exp > 0)
 				pw.print("ExpReward:" + exp + "\n");
+			pw.print("Cooldown:" + dungeonCooldown + "\n");
 			pw.print("Autoload:" + autoload + "\n");
 			if(published)
 			{
@@ -603,6 +740,8 @@ public class Dungeon implements Comparable<Dungeon>
 
 			for(LocationWrapper lw : scriptTriggers.values())
 				pw.print(lw.toString(relative) + "\n");
+
+			saveCooldowns();
 		}
 		finally
 		{
@@ -700,6 +839,16 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 		else
 			exp = -1;
+
+		if(line.startsWith("Cooldown:"))
+		{
+			String temp = line.substring(9);
+			this.dungeonCooldown = Long.parseLong(temp);
+
+			line = br.readLine();
+		}
+		else
+			dungeonCooldown = 0;
 
 		if(line.startsWith("Autoload:"))
 		{
@@ -883,6 +1032,8 @@ public class Dungeon implements Comparable<Dungeon>
 		Collections.sort(blocks);
 
 		br.close();
+
+		loadCooldowns();
 
 		File permissionFile = new File(DungeonBuilder.dungeonRoot + "/" + owner + "/" + name + ".perms");
 		if(permissionFile.exists())

@@ -100,6 +100,19 @@
 				<Argument name="alias" description="The dungeon alias to set the exp reward for"/>
 			</Command>
 		</Category>
+		<Category name="cooldowns" description="Commands for managing dungeon cooldowns">
+			<Command name="set" command="setdungeoncooldown" description="Set the dungeon's cooldown value">
+				<Argument name="alias" description="The dungeon alias to set the cooldown for"/>
+				<Argument name="seconds" description="The number of seconds before the player can run the dungeon again.  -1 for infinite."/>
+			</Command>
+			<Command name="show" command="showdungeoncooldown" description="Show the dungeon's cooldown value">
+				<Argument name="alias" description="The dungeon alias to display the cooldown for"/>
+			</Command>
+			<Command name="reset-player" command="resetplayercooldown" description="Reset the player's cooldown value so they can run the dungeon again">
+				<Argument name="playername" description="The name of the player to reset"/>
+				<Argument name="alias" description="The alias of the dungeon to reset the player's cooldown for"/>
+			</Command>
+		</Category>
 		<Category name="monsters" description="Commands for managing monster spawnpoints">
 			<Command name="add" command="addmonsterspawn" description="Add a monster spawn point">
 				<Argument name="alias" description="The alias used to refer to this spawn point"/>

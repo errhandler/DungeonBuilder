@@ -238,6 +238,15 @@ public class DungeonBuilder extends JavaPlugin
 			{
 				d.killMonsters();
 				d.clearEntities();
+
+				try
+				{
+					d.saveCooldowns();
+				}
+				catch(Exception e)
+				{
+					myLogger.log(Level.WARNING, "Failed to save cooldowns for dungeon: " + d.getName());
+				}
 			}
 		}
 
@@ -2236,6 +2245,87 @@ public class DungeonBuilder extends JavaPlugin
 				sender.sendMessage("There is currently no exp reward for dungeon '" + alias + "'");
 		}
 
+		if(label.equals("setdungeoncooldown") && checkPermission(player, "dungeonbuilder.dungeons.cooldown"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String amount = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			Long cooldown = 0L;
+			try
+			{
+				cooldown = Long.parseLong(amount);
+				if(cooldown != -1)
+					cooldown = cooldown * 1000;
+			}
+			catch(Exception e)
+			{
+				sender.sendMessage("Invalid cooldown amount: " + amount);
+				return false;
+			}
+
+			d.setCooldown(cooldown);
+			sender.sendMessage("Cooldown updated.");
+		}
+
+		if(label.equals("showdungeoncooldown") && checkPermission(player, "dungeonbuilder.dungeons.cooldown"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			Long cooldown = d.getCooldown();
+			if(cooldown >= 0)
+				sender.sendMessage("Cooldown: " + (cooldown / 1000) + " seconds");
+			else
+				sender.sendMessage("Cooldown: Infinite");
+		}
+
+		if(label.equals("resetplayercooldown") && checkPermission(player, "dungeonbuilder.dungeons.cooldown"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String targetPlayer = args[0];
+			String alias = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			d.clearPlayerCooldown(targetPlayer);
+			sender.sendMessage("Dungeon cooldown cleared for: " + targetPlayer);
+		}
+
 		return true;
 	}
 
@@ -2595,6 +2685,8 @@ public class DungeonBuilder extends JavaPlugin
 					continue;
 				if(dungeonName.endsWith(".perms"))
 					continue;
+				if(dungeonName.endsWith(".cooldowns"))
+					continue;
 
 				try
 				{
@@ -2716,6 +2808,7 @@ public class DungeonBuilder extends JavaPlugin
 					inParty.remove(playername);
 			}
 			inDungeons.remove(playername);
+			d.addPlayerCooldown(playername);
 			if(teleport)
 			{
 				scheduler.scheduleSyncDelayedTask(this, new Runnable() { @Override public void run() {
