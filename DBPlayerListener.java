@@ -379,6 +379,9 @@ public class DBPlayerListener extends PlayerListener
 				if(inDungeon != null && d.equals(inDungeon))
 					continue;
 
+				if(d.hasAccess(name))
+					continue;
+
 				if(d.inDungeon(p.getLocation()))
 				{
 					Location loc1 = event.getFrom();

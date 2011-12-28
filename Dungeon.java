@@ -27,6 +27,7 @@ public class Dungeon implements Comparable<Dungeon>
 	private ArrayList<Entity> liveMonsters;
 	private ArrayList<String> defaultPermissions;
 	private ArrayList<MonsterInfo> savedMonsters;
+	private HashSet<String> coOwners;
 	private HashMap<String, Long> playerCooldowns;
 	private HashMap<String, LocationWrapper> monsterTriggers, scriptTriggers, savePoints;
 	private volatile boolean published, autoload = true, allowSpawn = false;
@@ -52,6 +53,7 @@ public class Dungeon implements Comparable<Dungeon>
 		scriptTriggers = new HashMap<String, LocationWrapper>();
 		savePoints = new HashMap<String, LocationWrapper>();
 		playerCooldowns = new HashMap<String, Long>();
+		coOwners = new HashSet<String>();
 		currentStatus = PartyStatus.EMPTY;
 	}
 
@@ -236,9 +238,99 @@ public class Dungeon implements Comparable<Dungeon>
 		return name;
 	}
 
+	public boolean rename(String newName)
+	{
+		String baseName = DungeonBuilder.dungeonRoot + "/" + owner + "/" + name;
+		String baseNameNew = DungeonBuilder.dungeonRoot + "/" + owner + "/" + newName;
+
+		File test = new File(baseName);
+		File testDest = new File(baseNameNew);
+		if(test.exists() && !testDest.exists())
+		{
+			boolean result = test.renameTo(testDest);
+			if(!result)
+				return false;
+		}
+
+		test = new File(baseName + ".groovy");
+		testDest = new File(baseNameNew + ".groovy");
+		if(test.exists() && !testDest.exists())
+		{
+			boolean result = test.renameTo(testDest);
+			if(!result)
+				return false;
+		}
+
+		test = new File(baseName + ".js");
+		testDest = new File(baseNameNew + ".js");
+		if(test.exists() && !testDest.exists())
+		{
+			boolean result = test.renameTo(testDest);
+			if(!result)
+				return false;
+		}
+
+		test = new File(baseName + ".previous");
+		testDest = new File(baseNameNew + ".previous");
+		if(test.exists() && !testDest.exists())
+		{
+			boolean result = test.renameTo(testDest);
+			if(!result)
+				return false;
+		}
+
+		test = new File(baseName + ".perms");
+		testDest = new File(baseNameNew + ".perms");
+		if(test.exists() && !testDest.exists())
+		{
+			boolean result = test.renameTo(testDest);
+			if(!result)
+				return false;
+		}
+
+		test = new File(baseName + ".cooldowns");
+		testDest = new File(baseNameNew + ".cooldowns");
+		if(test.exists() && !testDest.exists())
+		{
+			boolean result = test.renameTo(testDest);
+			if(!result)
+				return false;
+		}
+
+		this.name = newName;
+
+		return true;
+	}
+
 	public String getOwner()
 	{
 		return owner;
+	}
+
+	public Set<String> getCoOwners()
+	{
+		return new HashSet<String>(coOwners);
+	}
+
+	public boolean hasAccess(String playername)
+	{
+		if(owner.equals(playername))
+			return true;
+
+		if(coOwners.contains(playername))
+			return true;
+
+		return false;
+	}
+
+	public void addCoOwner(String playername)
+	{
+		coOwners.add(playername);
+	}
+
+	public void removeCoOwner(String playername)
+	{
+		coOwners.remove(playername);
 	}
 
 	public void publish(Location teleport)
@@ -678,6 +770,19 @@ public class Dungeon implements Comparable<Dungeon>
 				pw.print("ExpReward:" + exp + "\n");
 			pw.print("Cooldown:" + dungeonCooldown + "\n");
 			pw.print("Autoload:" + autoload + "\n");
+
+			if(coOwners.size() > 0)
+			{
+				StringBuffer coown = new StringBuffer();
+				for(String co : coOwners)
+				{
+					if(coown.length() > 0)
+						coown.append(",");
+					coown.append(co);
+				}
+				pw.print("Co-Owners:" + coown.toString() + "\n");
+			}
+
 			if(published)
 			{
 				World tworld = teleporter.getWorld();
@@ -854,6 +959,17 @@ public class Dungeon implements Comparable<Dungeon>
 		{
 			String temp = line.substring(9);
 			this.autoload = Boolean.parseBoolean(temp);
+
+			line = br.readLine();
+		}
+
+		if(line.startsWith("Co-Owners:"))
+		{
+			String temp = line.substring(10);
+			String [] comps = temp.split(",");
+			coOwners.clear();
+			for(String co : comps)
+				coOwners.add(co);
 
 			line = br.readLine();
 		}

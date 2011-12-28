@@ -36,6 +36,7 @@ permissions:
       dungeonbuilder.dungeons.start: true
       dungeonbuilder.dungeons.expreward: true
       dungeonbuilder.dungeons.cooldown: true
+      dungeonbuilder.dungeons.share: true
       dungeonbuilder.party.kick: true
       dungeonbuilder.party.query: true
       dungeonbuilder.party.create: true
@@ -67,6 +68,7 @@ permissions:
       dungeonbuilder.dungeons.start: true
       dungeonbuilder.dungeons.expreward: true
       dungeonbuilder.dungeons.cooldown: true
+      dungeonbuilder.dungeons.share: true
   dungeonbuilder.worlds.*:
     description: Commands related to world management
     children:
@@ -429,4 +431,20 @@ commands:
     description: Resets the player's cooldown for a dungeon
     usage: /resetPlayerCooldown playername dungeon-alias
     permission: dungeonbuilder.dungeons.cooldown
+  shareDungeon:
+    description: Share access to a dungeon with another player
+    usage: /shareDungeon dungeon-alias playername
+    permission: dungeonbuilder.dungeons.share
+  unshareDungeon:
+    description: Un-share access to a dungeon
+    usage: /unshareDungeon dungeon-alias playername
+    permission: dungeonbuilder.dungeons.share
+  listCoOwners:
+    description: List players who also have access to the dungeon
+    usage: /listCoOwners dungeon-alias
+    permission: dungeonbuilder.dungeons.share
+  renameDungeon:
+    description: Rename a dungeon
+    usage: /renameDungeon old-alias new-alias
+    permission: dungeonbuilder.dungeons.create
 

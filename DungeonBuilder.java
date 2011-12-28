@@ -2326,6 +2326,156 @@ public class DungeonBuilder extends JavaPlugin
 			sender.sendMessage("Dungeon cooldown cleared for: " + targetPlayer);
 		}
 
+		if(label.equals("sharedungeon") && checkPermission(player, "dungeonbuilder.dungeons.share"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String targetPlayer = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			if(dungeonMap.containsKey(targetPlayer))
+			{
+				for(Dungeon dtemp : dungeonMap.get(targetPlayer))
+				{
+					if(dtemp.getName().equals(alias))
+					{
+						sender.sendMessage("Error: That player already owns a dungeon by that name");
+						return false;
+					}
+				}
+			}
+
+			d.addCoOwner(targetPlayer);
+			if(!dungeonMap.containsKey(targetPlayer))
+				dungeonMap.put(targetPlayer, new ArrayList<Dungeon>());
+			dungeonMap.get(targetPlayer).add(d);
+			sender.sendMessage("The player '" + targetPlayer + "' now has access to dungeon '" + alias + "'");
+
+			Player p2 = server.getPlayer(targetPlayer);
+			if(p2 != null)
+				p2.sendMessage("You have been granted access to the dungeon '" + alias + "'");
+		}
+
+		if(label.equals("unsharedungeon") && checkPermission(player, "dungeonbuilder.dungeons.share"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String targetPlayer = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			if(d.hasAccess(targetPlayer) && !d.getOwner().equals(targetPlayer))
+			{
+				d.removeCoOwner(targetPlayer);
+				if(dungeonMap.containsKey(targetPlayer))
+					dungeonMap.get(targetPlayer).remove(d);
+				sender.sendMessage("The player '" + targetPlayer + "' no longer has access to dungeon '" + alias + "'");
+			}
+			else
+				sender.sendMessage("The player '" + targetPlayer + "' does not have access to dungeon '" + alias + "'");
+		}
+
+		if(label.equals("listcoowners") && checkPermission(player, "dungeonbuilder.dungeons.share"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			StringBuffer out = new StringBuffer();
+			for(String co : d.getCoOwners())
+			{
+				if(out.length() > 0)
+					out.append(", ");
+				out.append(co);
+			}
+
+			if(out.length() == 0)
+				sender.sendMessage("The dungeon '" + alias + "' is not currently shared with anyone");
+			else
+				sender.sendMessage(out.toString());
+		}
+
+		if(label.equals("renamedungeon") && checkPermission(player, "dungeonbuilder.dungeons.create"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String newAlias = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			if(d.isPublished())
+			{
+				sender.sendMessage("Please un-publish the dungeon before renaming it");
+				return false;
+			}
+
+			if(dungeonMap.containsKey(playername))
+			{
+				for(Dungeon dtemp : dungeonMap.get(playername))
+				{
+					if(dtemp.getName().equals(newAlias))
+					{
+						sender.sendMessage("A dungeon already exists by the name '" + newAlias + "'");
+						return false;
+					}
+				}
+			}
+
+			boolean result = d.rename(newAlias);
+			if(result)
+				sender.sendMessage("Dungeon '" + alias + "' renamed to '" + newAlias + "'");
+			else
+			{
+				sender.sendMessage("An error was encoutered when attempting to rename the dungeon.");
+				sender.sendMessage("The most common cause for this is file system permissions");
+				sender.sendMessage("Please inspect the folder containing your dungeon files");
+			}
+
+		}
+
+
 		return true;
 	}
 
@@ -2414,7 +2564,7 @@ public class DungeonBuilder extends JavaPlugin
 				return;
 
 			Dungeon d = inDungeons.get(name);
-			if(d.getOwner().equals(name))
+			if(d.hasAccess(name))
 				return;
 
 			Block b = event.getBlock();
@@ -2445,7 +2595,7 @@ public class DungeonBuilder extends JavaPlugin
 				return;
 
 			Dungeon d = inDungeons.get(name);
-			if(d.getOwner().equals(name))
+			if(d.hasAccess(name))
 				return;
 
 			Block b = event.getBlock();
@@ -2693,6 +2843,13 @@ public class DungeonBuilder extends JavaPlugin
 					myLogger.log(Level.INFO, "DungeonBuilder - Loading dungeon - " + playername + ":" + dungeonName);	
 					Dungeon d = new Dungeon(dungeonName, playername, this);
 					dungeons.add(d);
+
+					for(String co : d.getCoOwners())
+					{
+						if(!dungeonMap.containsKey(co))
+							dungeonMap.put(co, new ArrayList<Dungeon>());
+						dungeonMap.get(co).add(d);
+					}
 				}
 				catch(Exception e)
 				{

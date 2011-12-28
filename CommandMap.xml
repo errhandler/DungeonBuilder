@@ -33,6 +33,23 @@
 		<Command name="undo" command="undodungeoncreation" description="Undo creation of a dungeon">
 			<Argument name="alias" description="The alias of the dungeon to undo creation for"/>
 		</Command>
+		<Command name="rename" command="renamedungeon" description="Rename a dungeon">
+			<Argument name="old-alias" description="The current alias of the dungeon"/>
+			<Argument name="new-alias" description="The new alias for the dungeon"/>
+		</Command>
+	</Category>
+	<Category name="share" description="Commands for sharing dungeons">
+		<Command name="add" command="sharedungeon" description="Add a co-owner to the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to share"/>
+			<Argument name="player" description="The name of the player to grant access to"/>
+		</Command>
+		<Command name="remove" command="unsharedungeon" description="Remove a co-owner from the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to un-share"/>
+			<Argument name="player" description="The name of the player to remove access from"/>
+		</Command>
+		<Command name="list" command="listcoowners" description="List current co-owners for the dungeon">
+			<Argument name="alias" description="The alias of the dungeon to display co-owners for"/>
+		</Command>
 	</Category>
 	<Command name="create-world" command="createworld" description="Create a new world">
 		<Argument name="name" description="The name for the new world"/>
