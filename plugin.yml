@@ -37,6 +37,7 @@ permissions:
       dungeonbuilder.dungeons.expreward: true
       dungeonbuilder.dungeons.cooldown: true
       dungeonbuilder.dungeons.share: true
+      dungeonbuilder.dungeons.inv: true
       dungeonbuilder.party.kick: true
       dungeonbuilder.party.query: true
       dungeonbuilder.party.create: true
@@ -69,6 +70,7 @@ permissions:
       dungeonbuilder.dungeons.expreward: true
       dungeonbuilder.dungeons.cooldown: true
       dungeonbuilder.dungeons.share: true
+      dungeonbuilder.dungeons.inv: true
   dungeonbuilder.worlds.*:
     description: Commands related to world management
     children:
@@ -447,4 +449,20 @@ commands:
     description: Rename a dungeon
     usage: /renameDungeon old-alias new-alias
     permission: dungeonbuilder.dungeons.create
+  permitInventoryItem:
+    description: Allow the user to enter the dungeon with the specified inventory item
+    usage: /permitInventoryItem dungeon-alias item-type
+    permission: dungeonbuilder.dungeons.inv
+  restrictInventoryItem:
+    description: Prevent users from entering the dungeon with the specified inventory item
+    usage: /restrictInventoryItem dungeon-alias item-type
+    permission: dungeonbuilder.dungeons.inv
+  keepInventoryItem:
+    description: Allow the user to keep the specified item when they complete the dungeon
+    usage: /keepInventoryItem dungeon-alias item-type
+    permission: dungeonbuilder.dungeons.inv
+  listInventoryItems:
+    description: Display the current inventory configuration for the dungeon
+    usage: /listInventoryItems dungeon-alias
+    permission: dungeonbuilder.dungeons.inv
 

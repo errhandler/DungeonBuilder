@@ -51,6 +51,23 @@
 			<Argument name="alias" description="The alias of the dungeon to display co-owners for"/>
 		</Command>
 	</Category>
+	<Category name="inventory" description="Dungeon inventory management commands">
+		<Command name="permit" command="permitinventoryitem" description="Permit the player to bring the inventory item into the dungeon">
+			<Argument name="alias" description="Dungeon alias"/>
+			<Argument name="material" description="Item material type"/>
+		</Command>
+		<Command name="restrict" command="restrictinventoryitem" description="Prevent the player from bringing specific items into the dungeon">
+			<Argument name="alias" description="Dungeon alias"/>
+			<Argument name="material" description="Item material type"/>
+		</Command>
+		<Command name="keep" command="keepinventoryitem" description="Allow the player to keep items of the specified type that they find">
+			<Argument name="alias" description="Dungeon alias"/>
+			<Argument name="material" description="Item material type"/>
+		</Command>
+		<Command name="list" command="listinventoryitems" description="List current inventory configuration">
+			<Argument name="alias" description="Dungeon alias"/>
+		</Command>
+	</Category>
 	<Command name="create-world" command="createworld" description="Create a new world">
 		<Argument name="name" description="The name for the new world"/>
 		<Argument name="type" description="The type of world" default="NORMAL"/>

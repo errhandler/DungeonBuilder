@@ -2448,7 +2448,7 @@ public class DungeonBuilder extends JavaPlugin
 			if(d.isPublished())
 			{
 				sender.sendMessage("Please un-publish the dungeon before renaming it");
-				return false;
+				return true;
 			}
 
 			if(dungeonMap.containsKey(playername))
@@ -2458,7 +2458,7 @@ public class DungeonBuilder extends JavaPlugin
 					if(dtemp.getName().equals(newAlias))
 					{
 						sender.sendMessage("A dungeon already exists by the name '" + newAlias + "'");
-						return false;
+						return true;
 					}
 				}
 			}
@@ -2473,6 +2473,162 @@ public class DungeonBuilder extends JavaPlugin
 				sender.sendMessage("Please inspect the folder containing your dungeon files");
 			}
 
+		}
+
+		if(label.equals("permitinventoryitem") && checkPermission(player, "dungeonbuilder.dungeons.inv"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String material = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			try
+			{
+				material = material.toUpperCase();	
+				if(!material.equals("NONE") && !material.equals("ALL"))
+				{
+					Material m = Material.valueOf(material.toUpperCase());
+				}
+				d.permitInventoryItem(material);
+				sender.sendMessage(material + " added to list of items to permit");
+			}
+			catch(Exception e)
+			{
+				sender.sendMessage("Invalid material type: " + material);
+				return true;
+			}
+		}
+
+		if(label.equals("restrictinventoryitem") && checkPermission(player, "dungeonbuilder.dungeons.inv"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String material = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			try
+			{
+				material = material.toUpperCase();	
+				if(!material.equals("NONE") && !material.equals("ALL"))
+				{
+					Material m = Material.valueOf(material.toUpperCase());
+				}
+				d.restrictInventoryItem(material);
+				sender.sendMessage(material + " added to list of items to restrict");
+			}
+			catch(Exception e)
+			{
+				sender.sendMessage("Invalid material type: " + material);
+				return true;
+			}
+		}
+
+		if(label.equals("keepinventoryitem") && checkPermission(player, "dungeonbuilder.dungeons.inv"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String material = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			try
+			{
+				material = material.toUpperCase();	
+				if(!material.equals("NONE") && !material.equals("ALL"))
+				{
+					Material m = Material.valueOf(material.toUpperCase());
+				}
+				d.keepInventoryItem(material);
+				sender.sendMessage(material + " added to list of items to keep");
+			}
+			catch(Exception e)
+			{
+				sender.sendMessage("Invalid material type: " + material);
+				return true;
+			}
+		}
+
+		if(label.equals("listinventoryitems") && checkPermission(player, "dungeonbuilder.dungeons.inv"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			StringBuffer permit = new StringBuffer();
+			StringBuffer restrict = new StringBuffer();
+			StringBuffer keep = new StringBuffer();
+			for(String item : d.listInventoryItems())
+			{
+				if(item.startsWith("+"))
+				{
+					if(permit.length() > 0)
+						permit.append(",");
+					permit.append(item.substring(1));
+				}
+
+				if(item.startsWith("-"))
+				{
+					if(restrict.length() > 0)
+						restrict.append(",");
+					restrict.append(item.substring(1));
+				}
+
+				if(item.startsWith("%"))
+				{
+					if(keep.length() > 0)
+						keep.append(",");
+					keep.append(item.substring(1));
+				}
+			}
+
+			if(permit.length() > 0)
+				sender.sendMessage("Permit: " + permit.toString());
+			if(restrict.length() > 0)
+				sender.sendMessage("Restrict: " + restrict.toString());
+			sender.sendMessage("Keep: " + keep.toString());
 		}
 
 
@@ -2647,6 +2803,7 @@ public class DungeonBuilder extends JavaPlugin
 			Player ptemp = server.getPlayer(dpname);
 			addPlayerToDungeon(dpname, d);
 			clearSavePoint(dpname);
+			d.clearInventoryStart(ptemp);
 			ScriptManager.runDungeonStartScript(d, server, ptemp, this);
 
 			if(!isPlayerStillInDungeon(ptemp))
@@ -2966,6 +3123,7 @@ public class DungeonBuilder extends JavaPlugin
 			}
 			inDungeons.remove(playername);
 			d.addPlayerCooldown(playername);
+			d.clearInventoryExit(player);
 			if(teleport)
 			{
 				scheduler.scheduleSyncDelayedTask(this, new Runnable() { @Override public void run() {

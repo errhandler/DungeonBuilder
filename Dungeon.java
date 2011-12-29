@@ -27,9 +27,11 @@ public class Dungeon implements Comparable<Dungeon>
 	private ArrayList<Entity> liveMonsters;
 	private ArrayList<String> defaultPermissions;
 	private ArrayList<MonsterInfo> savedMonsters;
+	private HashSet<String> invPermits;
 	private HashSet<String> coOwners;
 	private HashMap<String, Long> playerCooldowns;
 	private HashMap<String, LocationWrapper> monsterTriggers, scriptTriggers, savePoints;
+	private HashMap<String, ArrayList<ItemStack>> storedInventories;
 	private volatile boolean published, autoload = true, allowSpawn = false;
 	private double reward, sphereRadius;
 	private int partySize = 1;
@@ -53,7 +55,9 @@ public class Dungeon implements Comparable<Dungeon>
 		scriptTriggers = new HashMap<String, LocationWrapper>();
 		savePoints = new HashMap<String, LocationWrapper>();
 		playerCooldowns = new HashMap<String, Long>();
+		storedInventories = new HashMap<String, ArrayList<ItemStack>>();
 		coOwners = new HashSet<String>();
+		invPermits = new HashSet<String>();
 		currentStatus = PartyStatus.EMPTY;
 	}
 
@@ -300,6 +304,305 @@ public class Dungeon implements Comparable<Dungeon>
 		this.name = newName;
 
 		return true;
+	}
+
+	public void permitInventoryItem(String material)
+	{
+		HashSet<String> newInv = new HashSet<String>();
+		for(String item : invPermits)
+		{
+			if(item.startsWith("-"))
+				continue;
+
+			newInv.add(item);
+		}
+
+		newInv.add("+" + material);
+
+		invPermits = newInv;
+	}
+
+	public void restrictInventoryItem(String material)
+	{
+		HashSet<String> newInv = new HashSet<String>();
+		for(String item : invPermits)
+		{
+			if(item.startsWith("+"))
+				continue;
+
+			newInv.add(item);
+		}
+
+		newInv.add("-" + material);
+
+		invPermits = newInv;
+	}
+
+	public void keepInventoryItem(String material)
+	{
+		if(material.equals("NONE") || material.equals("ALL"))
+		{
+			HashSet<String> newInv = new HashSet<String>();
+			for(String item : invPermits)
+			{
+				if(item.startsWith("%"))
+					continue;
+				newInv.add(item);
+			}
+			invPermits = newInv;
+		}
+
+		if(!material.equals("ALL") || !material.equals("NONE"))
+		{
+			invPermits.remove("%ALL");
+			invPermits.remove("%NONE");
+		}
+
+		invPermits.add("%" + material);
+	}
+
+	public Set<String> listInventoryItems()
+	{
+		return new HashSet<String>(invPermits);
+	}
+
+	public void clearInventoryStart(Player p)
+	{
+		if(invPermits.size() == 0)
+			return;
+
+		backupInventory(p);
+
+		if(invPermits.contains("+ALL") || invPermits.contains("-NONE") || invPermits.size() == 0)
+			return;
+
+		PlayerInventory pi = p.getInventory();
+		if(invPermits.contains("-ALL") || invPermits.contains("+NONE"))
+		{
+			pi.setArmorContents(null);
+			pi.clear();
+
+			return;
+		}
+
+		Boolean permit = null;
+		for(String item : invPermits)
+		{
+			if(item.startsWith("+"))
+				permit = true;
+			if(item.startsWith("-"))
+				permit = false;
+
+			if(permit != null)
+				break;
+		}
+	
+		if(permit == null)
+			return;
+
+		ItemStack is = pi.getBoots();
+		if(is != null && !keepItem(permit, is))
+			pi.setBoots(null);	
+		is = pi.getChestplate();
+		if(is != null && !keepItem(permit, is))
+			pi.setChestplate(null);
+		is = pi.getHelmet();
+		if(is != null && !keepItem(permit, is))
+			pi.setHelmet(null);
+		is = pi.getLeggings();
+		if(is != null && !keepItem(permit, is))
+			pi.setLeggings(null);
+
+		ItemStack [] contents = pi.getContents();
+		for(ItemStack item : contents)
+		{
+			if(item == null)
+				continue;
+
+			if(!keepItem(permit, item))
+				pi.removeItem(item);
+		}
+
+	}
+
+	private boolean keepItem(boolean permit, ItemStack is)
+	{
+		if(is == null)
+			return true;
+
+		if(permit)
+		{
+			if(invPermits.contains("+" + is.getType().toString()))
+				return true;
+		}
+		else
+		{
+			if(!invPermits.contains("-" + is.getType().toString()))
+				return true;
+		}
+
+		return false;
+	}
+
+	public void clearInventoryExit(Player p)
+	{
+		if(invPermits.size() == 0)
+			return;
+
+		PlayerInventory pi = p.getInventory();
+		boolean keepAll = false;
+		try
+		{
+			boolean found = false;
+			for(String inv : invPermits)
+			{
+				if(inv.startsWith("%"))
+					found = true;
+			}
+
+			keepAll = !found;
+			if(invPermits.contains("%ALL"))
+				keepAll = true;
+
+			if(keepAll)
+				return;
+
+			if(invPermits.contains("%NONE"))
+				return;
+
+			ArrayList<ItemStack> saved = storedInventories.get(p.getName());
+			ItemStack is = pi.getBoots();
+			if(is != null && is.getType() != Material.AIR && !invPermits.contains("%" + is.getType().toString()))
+				pi.setBoots(null);
+			else if(!saved.contains(is))
+				saved.add(is);
+
+			is = pi.getChestplate();
+			if(is != null && is.getType() != Material.AIR && !invPermits.contains("%" + is.getType().toString()))
+				pi.setChestplate(null);
+			else if(!saved.contains(is))
+				saved.add(is);
+
+			is = pi.getHelmet();
+			if(is != null && is.getType() != Material.AIR && !invPermits.contains("%" + is.getType().toString()))
+				pi.setHelmet(null);
+			else if(!saved.contains(is))
+				saved.add(is);
+
+			is = pi.getLeggings();
+			if(is != null && is.getType() != Material.AIR && !invPermits.contains("%" + is.getType().toString()))
+				pi.setLeggings(null);
+			else if(!saved.contains(is))
+				saved.add(is);
+
+			ItemStack [] contents = pi.getContents();
+			for(ItemStack item : contents)
+			{
+				if(item == null)
+					continue;
+
+				if(keepAll && !saved.contains(item))
+				{
+					saved.add(item);
+					continue;
+				}
+
+				if(item.getType() != Material.AIR && invPermits.contains("%" + item.getType().toString()) && !saved.contains(item))
+					saved.add(item);
+			}
+		}
+		finally
+		{
+			if(!keepAll)
+				pi.clear();
+			restoreInventory(p);
+		}
+	}
+
+	public void backupInventory(Player p)
+	{
+		PlayerInventory pi = p.getInventory();
+
+		ArrayList<ItemStack> saved = new ArrayList<ItemStack>();	
+		saved.add(pi.getBoots());
+		saved.add(pi.getChestplate());
+		saved.add(pi.getHelmet());
+		saved.add(pi.getLeggings());
+
+		for(ItemStack is : pi.getContents())
+			saved.add(is);
+
+		storedInventories.put(p.getName(), saved);
+	}
+
+	public void restoreInventory(Player p)
+	{
+		if(!storedInventories.containsKey(p.getName()))
+			return;
+
+		ArrayList<ItemStack> saved = storedInventories.get(p.getName());
+		PlayerInventory pi = p.getInventory();
+
+		//I think this is silly, they return material type "AIR" when I call things like getBoots
+		//But if i try to call setBoots with the same item it blows up
+		ItemStack is = saved.get(0);
+		if(is != null && is.getType() == Material.AIR)
+			is = null;
+		if(!pi.getBoots().equals(is))
+			saved.add(pi.getBoots());
+		pi.setBoots(is);
+
+		is = saved.get(1);
+		if(is != null && is.getType() == Material.AIR)
+			is = null;
+		if(!pi.getChestplate().equals(is))
+			saved.add(pi.getChestplate());
+		pi.setChestplate(is);
+
+		is = saved.get(2);
+		if(is != null && is.getType() == Material.AIR)
+			is = null;
+		if(!pi.getHelmet().equals(is))
+			saved.add(pi.getHelmet());
+		pi.setHelmet(is);
+
+		is = saved.get(3);
+		if(is != null && is.getType() == Material.AIR)
+			is = null;
+		if(!pi.getLeggings().equals(is))
+			saved.add(pi.getLeggings());
+		pi.setLeggings(is);
+
+		boolean overflow = false;
+		savedloop: for(int i = 4; i < saved.size(); i++)
+		{
+			is = saved.get(i);
+
+			if(is == null)
+				continue;
+
+			if(is.getType() == Material.AIR)
+				continue;
+
+			int index = pi.firstEmpty();
+			if(index < 0 || index >= pi.getSize())
+			{
+				overflow = true;
+				world.dropItem(exitdest, is);
+			}
+			else
+			{
+				pi.setItem(index, is);
+			}
+		}
+
+		if(overflow)
+		{
+			p.sendMessage("You are out of inventory space");
+			p.sendMessage("Dropping surplus items at dungeon exit");
+		}
+
+		storedInventories.remove(p.getName());
 	}
 
 	public String getOwner()
@@ -782,6 +1085,18 @@ public class Dungeon implements Comparable<Dungeon>
 				}
 				pw.print("Co-Owners:" + coown.toString() + "\n");
 			}
+			
+			if(invPermits.size() > 0)
+			{
+				StringBuffer inv = new StringBuffer();
+				for(String item : invPermits)
+				{
+					if(inv.length() > 0)
+						inv.append(",");
+					inv.append(item);
+				}
+				pw.print("Inventory:" + inv.toString() + "\n");
+			}
 
 			if(published)
 			{
@@ -970,6 +1285,17 @@ public class Dungeon implements Comparable<Dungeon>
 			coOwners.clear();
 			for(String co : comps)
 				coOwners.add(co);
+
+			line = br.readLine();
+		}
+
+		if(line.startsWith("Inventory:"))
+		{
+			String temp = line.substring(10);
+			String [] comps = temp.split(",");
+			invPermits.clear();
+			for(String item : comps)
+				invPermits.add(item);
 
 			line = br.readLine();
 		}
