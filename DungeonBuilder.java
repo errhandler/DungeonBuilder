@@ -26,7 +26,7 @@ public class DungeonBuilder extends JavaPlugin
 	private static Logger myLogger;
 	public static String dungeonRoot = "plugins/dungeons";
 	public static boolean proximityCheck = true, enableSuperperms = true;
-	public static boolean dontSaveBlocks = false;
+	public static boolean dontSaveBlocks = false, enableMonsters = false;
 	public static Event.Priority respawnPriority = Event.Priority.Normal;
 	public Server server;
 
@@ -121,6 +121,11 @@ public class DungeonBuilder extends JavaPlugin
 					String temp = line.substring(15);
 					if(temp.toLowerCase().equals("true"))
 						dontSaveBlocks = true;
+				}
+				if(line.startsWith("enableMonsters="))
+				{
+					String temp = line.substring(15);
+					enableMonsters = Boolean.parseBoolean(temp);	
 				}
 			}
 		}
@@ -2655,6 +2660,9 @@ public class DungeonBuilder extends JavaPlugin
 	{
 		public void onCreatureSpawn(CreatureSpawnEvent event)
 		{
+			if(enableMonsters)
+				return;
+
 			Location loc = event.getLocation();
 
 			for(String key : dungeonMap.keySet())
