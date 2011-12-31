@@ -1,6 +1,6 @@
 name: DungeonBuilder
 main: net.virtuallyabstract.minecraft.DungeonBuilder
-version: 0.8.5
+version: 0.8.6
 permissions:
   '*':
     description: Grants all dungeon builder permissions
@@ -465,4 +465,7 @@ commands:
     description: Display the current inventory configuration for the dungeon
     usage: /listInventoryItems dungeon-alias
     permission: dungeonbuilder.dungeons.inv
-
+  clearInventoryConfig:
+    description: Clear the inventory configuration for the dungeon
+    usage: /clearInventoryConfig dungeon-alias
+    psermission: dungeonbuilder.dungeons.inv

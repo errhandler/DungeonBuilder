@@ -444,6 +444,11 @@ public class Dungeon implements Comparable<Dungeon>
 		return false;
 	}
 
+	public void clearInventoryConfig()
+	{
+		invPermits.clear();
+	}
+
 	public void clearInventoryExit(Player p)
 	{
 		if(invPermits.size() == 0)
@@ -463,9 +468,6 @@ public class Dungeon implements Comparable<Dungeon>
 			keepAll = !found;
 			if(invPermits.contains("%ALL"))
 				keepAll = true;
-
-			if(keepAll)
-				return;
 
 			if(invPermits.contains("%NONE"))
 				return;
@@ -513,8 +515,7 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 		finally
 		{
-			if(!keepAll)
-				pi.clear();
+			pi.clear();
 			restoreInventory(p);
 		}
 	}

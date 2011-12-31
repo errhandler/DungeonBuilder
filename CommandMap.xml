@@ -67,6 +67,9 @@
 		<Command name="list" command="listinventoryitems" description="List current inventory configuration">
 			<Argument name="alias" description="Dungeon alias"/>
 		</Command>
+		<Command name="clear" command="clearinventoryconfig" description="Clears the current inventory configuration">
+			<Argument name="alias" description="Dungeon alias"/>
+		</Command>
 	</Category>
 	<Command name="create-world" command="createworld" description="Create a new world">
 		<Argument name="name" description="The name for the new world"/>

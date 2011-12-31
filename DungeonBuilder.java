@@ -187,7 +187,7 @@ public class DungeonBuilder extends JavaPlugin
 
 	@Override public void onEnable()
 	{
-		myLogger.log(Level.INFO, "DungeonBuilder (v.0.8.5) Enabled");
+		myLogger.log(Level.INFO, "DungeonBuilder (v.0.8.6) Enabled");
 
 		server = this.getServer();
 
@@ -2634,6 +2634,26 @@ public class DungeonBuilder extends JavaPlugin
 			if(restrict.length() > 0)
 				sender.sendMessage("Restrict: " + restrict.toString());
 			sender.sendMessage("Keep: " + keep.toString());
+		}
+
+		if(label.equals("clearinventoryconfig") && checkPermission(player, "dungeonbuilder.dungeons.inv"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			d.clearInventoryConfig();
+			sender.sendMessage("Config cleared.");
 		}
 
 
