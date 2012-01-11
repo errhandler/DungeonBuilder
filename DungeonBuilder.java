@@ -191,6 +191,9 @@ public class DungeonBuilder extends JavaPlugin
 
 		server = this.getServer();
 
+		PluginManager pm = server.getPluginManager();
+		scheduler = server.getScheduler();
+
 		dungeonMap = new ConcurrentHashMap<String, ArrayList<Dungeon>>();
 		loadDungeons(server);
 		dungeonManager = new DungeonManager(server, dungeonMap);
@@ -201,9 +204,6 @@ public class DungeonBuilder extends JavaPlugin
 		activeSavePoints = new ConcurrentHashMap<String, LocationWrapper>();
 		activeMarkers = new HashMap<String, DungeonMarker>();
 		commandBuilders = new HashMap<String, CommandBuilder>();
-
-		PluginManager pm = server.getPluginManager();
-		scheduler = server.getScheduler();
 
 		playerListener = new DBPlayerListener(this);	
 		MyBlockListener blistener = new MyBlockListener();

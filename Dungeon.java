@@ -906,8 +906,31 @@ public class Dungeon implements Comparable<Dungeon>
 
 	public void loadDungeon()
 	{
-		clearLiquids();
+		if(plugin == null || plugin.scheduler == null)
+		{
+			prepareDungeon();
+			loadDungeonBlocks();
+			return;
+		}
 
+		plugin.scheduler.scheduleSyncDelayedTask(plugin, new Runnable() { @Override public void run() {
+			prepareDungeon();
+		}});
+
+		plugin.scheduler.scheduleSyncDelayedTask(plugin, new Runnable() { @Override public void run() {
+			loadDungeonBlocks();	
+		}}, 20);
+	}
+
+	public void prepareDungeon()
+	{
+		clearSpecial(Material.LAVA, Material.STATIONARY_LAVA, Material.WATER, Material.STATIONARY_WATER, Material.REDSTONE_WIRE, Material.REDSTONE_TORCH_OFF, 
+			     Material.REDSTONE_TORCH_ON, Material.REDSTONE, Material.DETECTOR_RAIL, Material.LEVER, Material.STONE_BUTTON, Material.WOOD_PLATE,
+			     Material.STONE_PLATE, Material.POWERED_RAIL, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON);
+	}
+
+	private void loadDungeonBlocks()
+	{
 		for(BlockInfo bi : blocks)
 		{
 			bi.setBlock();
@@ -966,33 +989,24 @@ public class Dungeon implements Comparable<Dungeon>
 
 	public void clearTorches()
 	{
-		Location loc = center.clone();
-
-		int halfdepth = depth / 2;
-		int halfwidth = width / 2;
-
-		double xbase = center.getX();
-		double zbase = center.getZ();
-		double ybase = center.getY() - 1;
-		for(double y = 1.0; y <= height-1; y += 1.0)
-		{
-			loc.setY(ybase + y);
-			for(double x = -halfdepth+1; x <= halfdepth-1; x += 1.0)
-			{
-				loc.setX(xbase + x);
-				for(double z = -halfwidth+1; z <= halfwidth-1; z += 1.0)
-				{
-					loc.setZ(zbase + z);	
-					Block b = loc.getBlock();
-					Material m = b.getType();
-					if(m == Material.TORCH)
-						b.setType(Material.AIR);
-				}
-			}
-		}
+		clearSpecial(Material.TORCH);
 	}
 
 	public void clearLiquids()
+	{
+		clearSpecial(Material.LAVA, Material.STATIONARY_LAVA, Material.WATER, Material.STATIONARY_WATER);
+	}
+
+	public void clearSpecial(Material ... types)
+	{
+		ArrayList<Material> materials = new ArrayList<Material>();
+		for(Material m : types)
+			materials.add(m);
+
+		clearSpecial(materials);
+	}
+
+	public void clearSpecial(ArrayList<Material> materials)
 	{
 		Location loc = center.clone();
 
@@ -1013,7 +1027,7 @@ public class Dungeon implements Comparable<Dungeon>
 					loc.setZ(zbase + z);	
 					Block b = loc.getBlock();
 					Material m = b.getType();
-					if(m == Material.LAVA || m == Material.STATIONARY_LAVA || m == Material.WATER || m == Material.STATIONARY_WATER)
+					if(materials.contains(m))
 						b.setType(Material.AIR);
 				}
 			}
