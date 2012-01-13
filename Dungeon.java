@@ -32,7 +32,8 @@ public class Dungeon implements Comparable<Dungeon>
 	private HashMap<String, Long> playerCooldowns;
 	private HashMap<String, LocationWrapper> monsterTriggers, scriptTriggers, savePoints;
 	private HashMap<String, ArrayList<ItemStack>> storedInventories;
-	private volatile boolean published, autoload = true, allowSpawn = false;
+	private volatile boolean published, autoload = true, allowSpawn = false, loading = false;
+	private Object loadingLock;
 	private double reward, sphereRadius;
 	private int partySize = 1;
 	private ArrayList<Player> currentPlayers = new ArrayList<Player>();
@@ -59,6 +60,7 @@ public class Dungeon implements Comparable<Dungeon>
 		coOwners = new HashSet<String>();
 		invPermits = new HashSet<String>();
 		currentStatus = PartyStatus.EMPTY;
+		loadingLock = new Object();
 	}
 
 	public Dungeon(String name, String owner, Location center, File dungeonFile, DungeonBuilder plugin)
@@ -906,6 +908,11 @@ public class Dungeon implements Comparable<Dungeon>
 
 	public void loadDungeon()
 	{
+		loadDungeon(null);
+	}
+
+	public void loadDungeon(final Player player)
+	{
 		if(plugin == null || plugin.scheduler == null)
 		{
 			prepareDungeon();
@@ -918,7 +925,7 @@ public class Dungeon implements Comparable<Dungeon>
 		}});
 
 		plugin.scheduler.scheduleSyncDelayedTask(plugin, new Runnable() { @Override public void run() {
-			loadDungeonBlocks();	
+			loadDungeonBlocks(player);	
 		}}, 20);
 	}
 
@@ -931,12 +938,48 @@ public class Dungeon implements Comparable<Dungeon>
 
 	private void loadDungeonBlocks()
 	{
-		for(BlockInfo bi : blocks)
+		loadDungeonBlocks(null);
+	}
+
+	private void loadDungeonBlocks(final Player player)
+	{
+		synchronized(loadingLock)
 		{
-			bi.setBlock();
+			loading = true;
+		}
+
+		final int chunksize = plugin.loadChunkSize;
+		for(int i = 0; i < blocks.size(); i+=chunksize)
+		{
+			final int start = i;
+			plugin.scheduler.scheduleSyncDelayedTask(plugin, new Runnable() { @Override public void run() {
+				for(int n = 0; n < chunksize; n++)
+				{
+					int index = start + n;
+					if(index >= blocks.size())
+					{
+						synchronized(loadingLock)
+						{
+							loading = false;
+						}
+						if(player != null)
+							player.sendMessage("Dungeon loaded");
+						return;
+					}
+					blocks.get(index).setBlock();
+				}
+			}}, (i/chunksize)*10);
 		}
 
 		refreshExitBlock();
+	}
+
+	public boolean isLoading()
+	{
+		synchronized(loadingLock)
+		{
+			return loading;
+		}
 	}
 
 	public void undoDungeon()

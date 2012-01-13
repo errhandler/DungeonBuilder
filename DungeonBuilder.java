@@ -28,6 +28,7 @@ public class DungeonBuilder extends JavaPlugin
 	public static boolean proximityCheck = true, enableSuperperms = true;
 	public static boolean dontSaveBlocks = false, enableMonsters = false;
 	public static Event.Priority respawnPriority = Event.Priority.Normal;
+	public static int loadChunkSize = 3000;
 	public Server server;
 
 	public DungeonManager dungeonManager;
@@ -126,6 +127,11 @@ public class DungeonBuilder extends JavaPlugin
 				{
 					String temp = line.substring(15);
 					enableMonsters = Boolean.parseBoolean(temp);	
+				}
+				if(line.startsWith("loadChunkSize="))
+				{
+					String temp = line.substring(14);
+					loadChunkSize = Integer.parseInt(temp);
 				}
 			}
 		}
@@ -479,6 +485,12 @@ public class DungeonBuilder extends JavaPlugin
 			Dungeon d = lookupDungeon(name, playername);
 			if(d != null)
 			{
+				if(d.isLoading())
+				{
+					sender.sendMessage("The dungeon is currently loading.  Please wait for it to finish before trying to save it");
+					return true;
+				}
+
 				try
 				{
 					d.saveDungeon();
@@ -514,8 +526,14 @@ public class DungeonBuilder extends JavaPlugin
 			Dungeon d = lookupDungeon(name, playername);
 			if(d != null)
 			{
-				d.loadDungeon();
-				sender.sendMessage("Dungeon loaded");
+				if(d.isLoading())
+				{
+					sender.sendMessage("The dungeon is already in the process of loading.");
+					return true;
+				}
+
+				sender.sendMessage("Loading dungeon");
+				d.loadDungeon(player);
 				return true;
 			}
 
@@ -670,6 +688,12 @@ public class DungeonBuilder extends JavaPlugin
 				return true;
 			}
 
+			if(d.isLoading())
+			{
+				sender.sendMessage("Please wait for the dungeon to finish loading before deleting it.");
+				return true;
+			}
+
 			String key1 = WorldUtils.createLocationKey(d.getStartingLocation());
 			String key2 = WorldUtils.createLocationKey(player.getLocation());
 			if(!key1.equals(key2))
@@ -712,6 +736,13 @@ public class DungeonBuilder extends JavaPlugin
 				sender.sendMessage("Failed to locate dungeon '" + name + "'");
 				return true;
 			}
+
+			if(d.isLoading())
+			{
+				sender.sendMessage("Please wait for the dungeon to finish loading before clearing it.");
+				return true;
+			}
+
 			d.clearDungeon();
 		}
 
@@ -736,6 +767,12 @@ public class DungeonBuilder extends JavaPlugin
 				sender.sendMessage("Failed to locate dungeon '" + name + "'");
 				return true;
 			}
+
+			if(d.isLoading())
+			{
+				sender.sendMessage("Please wait for the dungeon to finish loading before clearing it.");
+				return true;
+			}
 			d.clearTorches();
 		}
 
@@ -758,6 +795,12 @@ public class DungeonBuilder extends JavaPlugin
 			if(d == null)
 			{
 				sender.sendMessage("Failed to locate dungeon '" + name + "'");
+				return true;
+			}
+
+			if(d.isLoading())
+			{
+				sender.sendMessage("Please wait for the dungeon to finish loading before clearing it.");
 				return true;
 			}
 			d.clearLiquids();
@@ -1108,7 +1151,7 @@ public class DungeonBuilder extends JavaPlugin
 			}
 
 			playername = args[0];
-			inDungeons.remove(playername);
+			removePlayerFromDungeon(player, false);
 		}
 
 		if(label.equals("setfirstdungeonmarker") && checkPermission(player, "dungeonbuilder.dungeons.create"))
@@ -1228,6 +1271,12 @@ public class DungeonBuilder extends JavaPlugin
 			if(d == null)
 			{
 				sender.sendMessage("Could not find the dungeon '" + alias + "'");
+				return true;
+			}
+
+			if(d.isLoading())
+			{
+				sender.sendMessage("Please wait for the dungeon to finish loading before undoing it");
 				return true;
 			}
 
@@ -1673,6 +1722,12 @@ public class DungeonBuilder extends JavaPlugin
 			}
 
 			Dungeon d = inDungeons.get(playername);
+			if(d.isLoading())
+			{
+				sender.sendMessage("Please wait for the dungeon to finish loading before continuing");
+				return true;
+			}
+
 			player.teleport(d.getStartingLocation());
 			return true;
 		}
@@ -2153,6 +2208,12 @@ public class DungeonBuilder extends JavaPlugin
 			if(!targetDungeon.isPublished())
 			{
 				player.sendMessage("That dungeon has not been published for use.");
+				return true;
+			}
+
+			if(targetDungeon.isLoading())
+			{
+				player.sendMessage("Please wait for the dungeon to finish loading before trying to start it");
 				return true;
 			}
 

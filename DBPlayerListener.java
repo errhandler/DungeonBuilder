@@ -164,6 +164,13 @@ public class DBPlayerListener extends PlayerListener
 					boolean startDungeon = false;
 					if(lworig.getType() == LocationWrapper.LocationType.DUNGEON_START)
 					{
+						if(d.isLoading())
+						{
+							p.sendMessage("The dungeon is currently loading, please try again in a few seconds");
+							teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
+							continue lwloop;
+						}
+
 						Dungeon.PartyStatus status = null;
 						DungeonParty dp = null;
 						if(plugin.inParty.containsKey(p.getName()))	
