@@ -2303,12 +2303,58 @@ public class Dungeon implements Comparable<Dungeon>
 		return new ArrayList<LocationWrapper>(scriptTriggers.values());
 	}
 
+	public void requireMonsterDeaths(ArrayList<String> names)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!names.contains(mi.getAlias()))
+				continue;
+
+			mi.setRequiresDeath(true);
+		}
+	}
+
+	public void clearDeathRequirements()
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			mi.setRequiresDeath(false);
+		}
+	}
+
+	public ArrayList<String> listRequiredDeaths()
+	{
+		ArrayList<String> retVal = new ArrayList<String>();
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(mi.requiresDeath())
+				retVal.add(mi.getAlias());
+		}
+
+		return retVal;
+	}
+
+	public boolean areRequiredMonstersDead()
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.requiresDeath())
+				continue;
+
+			if(!mi.areMonstersDead())
+				return false;
+		}
+
+		return true;
+	}
+
 	private class MonsterInfo
 	{
 		private Location loc;
 		private String alias, type;
 		private ArrayList<Entity> liveMonsters = new ArrayList<Entity>();
 		private int count = 1;
+		private boolean requiresDeath = false;
 
 		public MonsterInfo(String line)
 			throws Exception
@@ -2327,8 +2373,10 @@ public class Dungeon implements Comparable<Dungeon>
 
 			try
 			{
-				if(comps.length == 6)
+				if(comps.length >= 6)
 					this.count = Integer.parseInt(comps[5]);
+				if(comps.length >= 7)
+					this.requiresDeath = Boolean.parseBoolean(comps[6]);
 			}
 			catch(Exception e)
 			{
@@ -2346,7 +2394,7 @@ public class Dungeon implements Comparable<Dungeon>
 
 		public String getLine(boolean relative)
 		{
-			String retVal = "M:" + alias + "," + createLocationString(loc, relative) + "," + type + "," + count;
+			String retVal = "M:" + alias + "," + createLocationString(loc, relative) + "," + type + "," + count + "," + requiresDeath;
 			return retVal;
 		}
 
@@ -2358,6 +2406,11 @@ public class Dungeon implements Comparable<Dungeon>
 		public Location getLoc()
 		{
 			return loc;
+		}
+
+		public void setRequiresDeath(boolean require)
+		{
+			requiresDeath = require;
 		}
 
 		public String getType()
@@ -2413,6 +2466,22 @@ public class Dungeon implements Comparable<Dungeon>
 				e.remove();
 
 			liveMonsters.clear();
+		}
+
+		public boolean requiresDeath()
+		{
+			return requiresDeath;
+		}
+
+		public boolean areMonstersDead()
+		{
+			for(Entity e : liveMonsters)
+			{
+				if(!e.isDead())
+					return false;
+			}
+
+			return true;
 		}
 	}
 

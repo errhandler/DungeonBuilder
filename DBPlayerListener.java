@@ -316,10 +316,12 @@ public class DBPlayerListener extends PlayerListener
 											teleportCooldowns.put(dp, System.currentTimeMillis() + 5000L);
 										break;
 									case DUNGEON_EXIT:
+										teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
+										if(!d.areRequiredMonstersDead())
+											return;
 										plugin.rewardPlayer(p, d);
 										d.rewardPlayerExp(p);
 										plugin.removePlayerFromDungeon(p, true);	
-										teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
 										//if(d.getAutoload())
 										//	d.loadDungeon();	
 										//d.killMonsters();

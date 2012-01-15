@@ -1392,20 +1392,6 @@ public class DungeonBuilder extends JavaPlugin
 		if(label.equals("leavedungeon"))
 		{
 			removePlayerFromDungeon(player, true);
-			//if(inParty.containsKey(playername))
-			//{
-			//	DungeonParty party = inParty.get(playername);
-			//	if(!party.getLeader().getName().equals(playername))
-			//	{
-			//		sender.sendMessage("Only the party leader can leave the dungeon");
-			//		return true;
-			//	}
-
-			//	for(Player p : party.listMembers())
-			//	{
-			//		removePlayerFromDungeon(p, true);
-			//	}
-			//}
 		}
 
 		if(label.equals("setpartysize") && checkPermission(player, "dungeonbuilder.dungeons.admin"))
@@ -2718,6 +2704,78 @@ public class DungeonBuilder extends JavaPlugin
 			sender.sendMessage("Config cleared.");
 		}
 
+		if(label.equals("requiremonsterdeaths") && checkPermission(player, "dungeonbuilder.dungeons.trigger"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			ArrayList<String> names = new ArrayList<String>();
+			for(int i = 1; i < args.length; i++)
+				names.add(args[i]);
+
+			d.requireMonsterDeaths(names);
+			sender.sendMessage("Dungeon updated.");
+		}
+
+		if(label.equals("clearrequireddeaths") && checkPermission(player, "dungeonbuilder.dungeons.trigger"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			d.clearDeathRequirements();
+			sender.sendMessage("Dungeon updated.");
+		}
+
+		if(label.equals("listrequireddeaths") && checkPermission(player, "dungeonbuilder.dungeons.trigger"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			StringBuffer monsters = new StringBuffer();
+			for(String monster : d.listRequiredDeaths())
+			{
+				if(monsters.length() > 0)
+					monsters.append(",");
+				monsters.append(monster);
+			}
+			sender.sendMessage(monsters.toString());
+		}
 
 		return true;
 	}

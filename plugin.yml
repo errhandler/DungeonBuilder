@@ -468,4 +468,16 @@ commands:
   clearInventoryConfig:
     description: Clear the inventory configuration for the dungeon
     usage: /clearInventoryConfig dungeon-alias
-    psermission: dungeonbuilder.dungeons.inv
+    permission: dungeonbuilder.dungeons.inv
+  requireMonsterDeaths:
+    description: List of monster spawns that must be dead before the dungeon is finished
+    usage: /requireMonsterDeaths dungeon-alias monster-alias1 [monster-alias2] ... [monster-aliasN]
+    permission: dungeonbuilder.dungeons.trigger
+  clearRequiredDeaths:
+    description: Clear the list of monster spawns requiring death before the dungeon is finished
+    usage: /clearRequiredDeaths dungeon-alias
+    permission: dungeonbuilder.dungeons.trigger
+  listRequiredDeaths:
+    description: List the monster spawns that must be dead before the dungeon is finished
+    usage: /listRequiredDeaths dungeon-alias
+    permission: dungeonbuilder.dungeons.trigger
