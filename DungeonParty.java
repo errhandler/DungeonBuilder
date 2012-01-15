@@ -1,5 +1,7 @@
 package net.virtuallyabstract.minecraft;
 
+import com.herocraftonline.dev.heroes.party.*;
+import com.herocraftonline.dev.heroes.hero.*;
 import org.bukkit.entity.*;
 import org.bukkit.*;
 import java.util.*;
@@ -9,6 +11,7 @@ public class DungeonParty
 	private String leader;
 	private Server server;
 	private Dungeon activeDungeon;
+	private HeroParty heroParty;
 
 	private HashSet<String> members;
 
@@ -18,6 +21,23 @@ public class DungeonParty
 
 	public DungeonParty(String leader, Server server)
 	{
+		if(DungeonBuilder.heroesPlugin != null)
+		{
+			Player leadPlayer = server.getPlayer(leader);
+
+			PartyManager pm = DungeonBuilder.heroesPlugin.getPartyManager();
+			for(HeroParty party : pm.getParties())
+			{
+				if(party.isPartyMember(leadPlayer))
+				{
+					heroParty = party;
+					break;
+				}
+			}
+		}
+		else
+			heroParty = null;
+
 		this.leader = leader;
 		this.server = server;
 		members = new HashSet<String>();
@@ -26,21 +46,48 @@ public class DungeonParty
 
 	public void addMember(String member)
 	{
+		if(heroParty != null)
+		{
+			Player p = server.getPlayer(member);
+			Hero h = DungeonBuilder.heroesPlugin.getHeroManager().getHero(p);
+			heroParty.addMember(h);
+
+			return;
+		}
+
 		members.add(member);
 	}
 
 	public void removeMember(String member)
 	{
+		if(heroParty != null)
+		{
+			Player p = server.getPlayer(member);
+			Hero h = DungeonBuilder.heroesPlugin.getHeroManager().getHero(p);
+			heroParty.removeMember(h);
+
+			return;
+		}
+
 		members.remove(member);
 	}
 
 	public boolean containsMember(Player member)
 	{
+		if(heroParty != null)
+			return heroParty.isPartyMember(member);
+
 		return containsMember(member.getName());
 	}
 
 	public boolean containsMember(String member)
 	{
+		if(heroParty != null)
+		{
+			Player temp = server.getPlayer(member);
+			return heroParty.isPartyMember(temp);
+		}
+
 		if(members.contains(member))
 			return true;
 		else
@@ -49,24 +96,35 @@ public class DungeonParty
 
 	public Set<String> listMembers()
 	{
-		//HashSet<Player> retVal = new HashSet<Player>();
-		//for(String playername : members)
-		//{
-		//	if(server.getPlayer(playername) != null)
-		//		retVal.add(server.getPlayer(playername));
-		//}
+		HashSet<String> retVal = new HashSet<String>();
+		if(heroParty != null)
+		{
+			for(Hero h : heroParty.getMembers())
+				retVal.add(h.getPlayer().getName());
+		}
+		else
+			retVal.addAll(members);
 
-		//return retVal;
-		return new HashSet<String>(members);
+		return retVal;
 	}
 
 	public int getSize()
 	{
+		if(heroParty != null)
+		{
+			return heroParty.getMembers().size();
+		}
+
 		return members.size();
 	}
 
 	public String getLeader()
 	{
+		if(heroParty != null)
+		{
+			return heroParty.getLeader().getPlayer().getName();
+		}
+
 		return leader;
 	}
 
@@ -80,12 +138,20 @@ public class DungeonParty
 		return activeDungeon;
 	}
 
+	public HeroParty getHeroParty()
+	{
+		return heroParty;
+	}
+
 	@Override public boolean equals(Object obj2)
 	{
 		if(!(obj2 instanceof DungeonParty))
 			return false;
 
 		DungeonParty party2 = (DungeonParty)obj2;
+
+		if(heroParty != null && party2.getHeroParty() != null)
+			return heroParty.equals(party2.getHeroParty());
 
 		if(getSize() != party2.getSize())
 			return false;

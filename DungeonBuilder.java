@@ -16,6 +16,7 @@ import org.bukkit.scheduler.*;
 import com.nijikokun.register.payment.*;
 import com.nijikokun.register.payment.Method.MethodAccount;
 import org.bukkit.plugin.Plugin;
+import com.herocraftonline.dev.heroes.*;
 import java.util.logging.*;
 import java.util.concurrent.*;
 import java.util.*;
@@ -30,6 +31,7 @@ public class DungeonBuilder extends JavaPlugin
 	public static Event.Priority respawnPriority = Event.Priority.Normal;
 	public static int loadChunkSize = 3000;
 	public Server server;
+	public static Heroes heroesPlugin;
 
 	public DungeonManager dungeonManager;
 	public ConcurrentHashMap<String, ArrayList<Dungeon>> dungeonMap;
@@ -199,6 +201,10 @@ public class DungeonBuilder extends JavaPlugin
 
 		PluginManager pm = server.getPluginManager();
 		scheduler = server.getScheduler();
+
+		heroesPlugin = (Heroes)pm.getPlugin("Heroes");
+		if(heroesPlugin != null)
+			myLogger.log(Level.INFO, "DungeonBuilder - Heroes support enabled");
 
 		dungeonMap = new ConcurrentHashMap<String, ArrayList<Dungeon>>();
 		loadDungeons(server);
@@ -2230,13 +2236,13 @@ public class DungeonBuilder extends JavaPlugin
 			else
 			{
 				dp = inParty.get(playername);
-				if(!targetDungeon.validPartySize(dp.getSize()))
-				{
-					player.sendMessage("You need to be in a party of size " + targetDungeon.getMinPartySize() + "-" + targetDungeon.getMaxPartySize() + " to start this dungeon.");
-					return true;
-				}
 			}
-			
+
+			if(!targetDungeon.validPartySize(dp.getSize()))
+			{
+				player.sendMessage("You need to be in a party of size " + targetDungeon.getMinPartySize() + "-" + targetDungeon.getMaxPartySize() + " to start this dungeon.");
+				return true;
+			}
 
 			Dungeon.PartyStatus status = targetDungeon.addParty(dp);
 			switch(status)
