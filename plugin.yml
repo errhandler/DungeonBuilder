@@ -326,7 +326,7 @@ commands:
     usage: /leaveDungeon
   setPartySize:
     description: Set the size of parties for the dungeon
-    usage: /setPartySize alias size
+    usage: /setPartySize alias min [max] 
     permission: dungeonbuilder.dungeons.admin
   toggleAutoload:
     description: Toggle's the autoload functionality for the dungeon

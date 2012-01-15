@@ -1415,12 +1415,20 @@ public class DungeonBuilder extends JavaPlugin
 
 			try
 			{
-				Integer sizeInt = Integer.parseInt(size);
-				if(sizeInt <= 0)
+				Integer sizeMin = Integer.parseInt(size);
+				if(sizeMin <= 0)
 					throw new Exception("Invalid");
 
-				d.setPartySize(sizeInt);
-				sender.sendMessage("Party size set to: " + sizeInt);
+				Integer sizeMax = sizeMin;
+				if(args.length == 3)
+				{
+					sizeMax = Integer.parseInt(args[2]);
+					if(sizeMax <= 0)
+						throw new Exception("Invalid");
+				}
+
+				d.setPartySize(sizeMin, sizeMax);
+				sender.sendMessage("Party size set to: " + sizeMin + "-" + sizeMax);
 			}
 			catch(Exception e)
 			{
@@ -2208,23 +2216,23 @@ public class DungeonBuilder extends JavaPlugin
 			DungeonParty dp = null;
 			if(!inParty.containsKey(playername))
 			{
-				if(targetDungeon.getPartySize() == 1)
+				if(targetDungeon.getMinPartySize() == 1)
 				{
 					dp = new DungeonParty(playername, server);
 					inParty.put(playername, dp);
 				}
 				else
 				{
-					player.sendMessage("You need to be in a party of size " + targetDungeon.getPartySize() + " to start this dungeon.");
+					player.sendMessage("You need to be in a party of size " + targetDungeon.getMinPartySize() + "-" + targetDungeon.getMaxPartySize() + " to start this dungeon.");
 					return true;
 				}
 			}
 			else
 			{
 				dp = inParty.get(playername);
-				if(targetDungeon.getPartySize() != dp.getSize())
+				if(!targetDungeon.validPartySize(dp.getSize()))
 				{
-					player.sendMessage("You need to be in a party of size " + targetDungeon.getPartySize() + " to start this dungeon.");
+					player.sendMessage("You need to be in a party of size " + targetDungeon.getMinPartySize() + "-" + targetDungeon.getMaxPartySize() + " to start this dungeon.");
 					return true;
 				}
 			}
@@ -2238,7 +2246,7 @@ public class DungeonBuilder extends JavaPlugin
 					break;
 				case INQUEUE:
 					player.sendMessage("You are now queued for the dungeon and will be notified when it becomes available.");
-					if(targetDungeon.getPartySize() == 1 && dp.getSize() == 1)
+					if(targetDungeon.getMinPartySize() == 1 && dp.getSize() == 1)
 						inParty.remove(playername);
 					break;
 			}

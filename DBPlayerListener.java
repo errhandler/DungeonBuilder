@@ -175,15 +175,15 @@ public class DBPlayerListener extends PlayerListener
 						DungeonParty dp = null;
 						if(plugin.inParty.containsKey(p.getName()))	
 							dp = plugin.inParty.get(p.getName());
-						else if(d.getPartySize() == 1)
+						else if(d.getMinPartySize() == 1)
 						{
 							dp = new DungeonParty(p.getName(), plugin.server);
 							plugin.inParty.put(p.getName(), dp);
 						}
 
-						if(dp == null || dp.getSize() != d.getPartySize())
+						if(dp == null || !d.validPartySize(dp.getSize()))
 						{
-							p.sendMessage("Unable to queue for dungeon.  The expected party size is: " + d.getPartySize());
+							p.sendMessage("Unable to queue for dungeon.  The expected party size is: " + d.getMinPartySize() + "-" + d.getMaxPartySize());
 							teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
 							continue lwloop;
 						}
@@ -244,7 +244,7 @@ public class DBPlayerListener extends PlayerListener
 								teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
 								continue lwloop;
 							case TOOLARGE:
-								p.sendMessage("Your party size is too large for this dungeon.  Expected size: " + d.getPartySize());
+								p.sendMessage("Your party size is too large for this dungeon.  Expected size: " + d.getMinPartySize() + "-" + d.getMaxPartySize());
 								teleportCooldowns.put(p.getName(), System.currentTimeMillis() + 5000L);
 								continue lwloop;
 							case READY:

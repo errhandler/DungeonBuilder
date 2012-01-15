@@ -35,7 +35,7 @@ public class Dungeon implements Comparable<Dungeon>
 	private volatile boolean published, autoload = true, allowSpawn = false, loading = false;
 	private Object loadingLock;
 	private double reward, sphereRadius;
-	private int partySize = 1;
+	private int partySizeMin = 1, partySizeMax = 1;
 	private ArrayList<Player> currentPlayers = new ArrayList<Player>();
 	private ArrayList<DungeonParty> partyList = new ArrayList<DungeonParty>();
 	private volatile DungeonParty activeParty;
@@ -1128,7 +1128,7 @@ public class Dungeon implements Comparable<Dungeon>
 		{
 			pw = new PrintWriter(new FileWriter(dungeonFile));
 			pw.print("World:" + world.getName() + "," + world.getEnvironment().getId() + "\n");
-			pw.print("PartySize:" + partySize + "\n");
+			pw.print("PartySize:" + partySizeMin + "-" + partySizeMax + "\n");
 			pw.print("Reward:" + reward + "\n");
 			if(exp > 0)
 				pw.print("ExpReward:" + exp + "\n");
@@ -1283,22 +1283,40 @@ public class Dungeon implements Comparable<Dungeon>
 		if(line.startsWith("PartySize:"))
 		{
 			String temp = line.substring(10);
+
+			int min = 1, max = 1;
 			try
 			{
-				this.partySize = Integer.parseInt(temp);
+				if(temp.contains("-"))
+				{
+					String [] sizeComps = temp.split("-");
+					min = Integer.parseInt(sizeComps[0]);
+					max = Integer.parseInt(sizeComps[1]);
+				}
+				else
+				{
+					min = Integer.parseInt(temp);
+					max = min;
+				}
+				this.partySizeMin = min;
+				this.partySizeMax = max;
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				this.partySize = 1;
+				this.partySizeMin = 1;
+				this.partySizeMax = 1;
 			}
 
 			line = br.readLine();
 		}
 		else
-			partySize = 1;
+		{
+			partySizeMin = 1;
+			partySizeMax = 1;
+		}
 
-		if(partySize == 1)
+		if(partySizeMin == 1)
 			currentStatus = PartyStatus.READY;
 
 		if(line.startsWith("Reward:"))
@@ -1888,14 +1906,25 @@ public class Dungeon implements Comparable<Dungeon>
 		return false;
 	}
 
-	public void setPartySize(int size)
+	public void setPartySize(int min, int max)
 	{
-		partySize = size;
+		partySizeMin = min;
+		partySizeMax = max;
 	}
 
-	public int getPartySize()
+	public boolean validPartySize(int size)
 	{
-		return partySize;
+		return size >= partySizeMin && size <= partySizeMax;
+	}
+
+	public int getMinPartySize()
+	{
+		return partySizeMin;
+	}
+	
+	public int getMaxPartySize()
+	{
+		return partySizeMax;
 	}
 
 	public PartyStatus getStatus()
@@ -1908,7 +1937,7 @@ public class Dungeon implements Comparable<Dungeon>
 
 		for(DungeonParty dp : partyList)
 		{
-			if(dp.getSize() == partySize)
+			if(validPartySize(dp.getSize()))
 				return PartyStatus.READY;
 		}
 
@@ -1937,7 +1966,7 @@ public class Dungeon implements Comparable<Dungeon>
 			for(int i = 0; i < partyList.size(); i++)
 			{
 				DungeonParty party = partyList.get(i);
-				if(party.getSize() < partySize)
+				if(party.getSize() < partySizeMax)
 				{
 					party.addMember(p.getName());
 
@@ -1954,7 +1983,7 @@ public class Dungeon implements Comparable<Dungeon>
 
 	public PartyStatus addParty(DungeonParty party)
 	{
-		if(party.getSize() > partySize)
+		if(party.getSize() > partySizeMax)
 			return PartyStatus.TOOLARGE;
 
 		checkActiveParty();
@@ -1973,7 +2002,7 @@ public class Dungeon implements Comparable<Dungeon>
 			return PartyStatus.INQUEUE;
 		}
 
-		if(party.getSize() == partySize)
+		if(validPartySize(party.getSize()))
 			return PartyStatus.READY;
 		else
 			return PartyStatus.MISSING_PLAYERS;
