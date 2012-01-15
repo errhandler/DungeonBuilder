@@ -195,7 +195,7 @@ public class DungeonBuilder extends JavaPlugin
 
 	@Override public void onEnable()
 	{
-		myLogger.log(Level.INFO, "DungeonBuilder (v.0.8.6) Enabled");
+		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.0) Enabled");
 
 		server = this.getServer();
 
