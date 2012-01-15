@@ -182,6 +182,28 @@
 			<Command name="list-triggers" command="listmonstertriggers" description="Lists monster triggers for a dungeon">
 				<Argument name="dungeon-alias" description="The alias of the dungeon to display trigers for"/>
 			</Command>
+			<Command name="require-death" command="requiremonsterdeaths" description="Set the monsters that must be dead to exit the dungeon">
+				<Argument name="dungeon-alias" description="The alias for the dungeon"/>
+				<Argument name="monster-alias" description="The alias of the monster spawn to require.  This argument can be followed by the names of other monster spawns"/>
+			</Command>
+			<Command name="clear-required" command="clearrequireddeaths" description="Clear the list of required monster deaths">
+				<Argument name="dungeon-alias" description="The alias for the dungeon"/>
+			</Command>
+			<Command name="list-required" command="listrequireddeaths" description="List the required monster spawns to be dead before the dungeon is finished">
+				<Argument name="dungeon-alias" description="The alias for the dungeon"/>
+			</Command>
+			<Command name="add-death-trigger" command="addmonsterdeathtrigger" description="Add a script trigger that will execute when a monster spawn is killed">
+				<Argument name="dungeon-alias" description="The alias for the dungeon"/>
+				<Argument name="monster-alias" description="The monster alias that will generate the trigger"/>
+				<Argument name="script-function" description="The script function to execute when the monsters die"/>
+			</Command>
+			<Command name="remove-death-trigger" command="removemonsterdeathtrigger" description="Remove a monster death script trigger">
+				<Argument name="dungeon-alias" description="The alias for the dungeon"/>
+				<Argument name="monster-alias" description="The monster alias that will generate the trigger"/>
+			</Command>
+			<Command name="list-death-triggers" command="listmonsterdeathtriggers" description="List the monster triggers that will activate on monster deaths">
+				<Argument name="dungeon-alias" description="The alias for the dungeon"/>
+			</Command>
 		</Category>
 		<Category name="save-points" description="Command for managing dungeon savepoints">
 			<Command name="add" command="addsavepoint" description="Add a save point to the dungeon">
