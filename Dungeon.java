@@ -153,6 +153,9 @@ public class Dungeon implements Comparable<Dungeon>
 
 	public boolean containsLocation(Location l, int buffer)
 	{
+		if(!location.getWorld().getName().equals(world.getName()))
+			return false;
+
 		double x = l.getX();
 		double y = l.getY();
 		double z = l.getZ();

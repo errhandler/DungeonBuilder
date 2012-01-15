@@ -147,7 +147,7 @@ public class WorldUtils
 
 	public static String createLocationKey(Location loc)
 	{
-		String key = loc.getBlockX() + ":" + loc.getBlockZ() + ":" + loc.getBlockY();
+		String key = loc.getWorld().getName() + ":" + loc.getBlockX() + ":" + loc.getBlockZ() + ":" + loc.getBlockY();
 
 		return key;
 	}
