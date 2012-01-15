@@ -223,6 +223,7 @@ public class DungeonBuilder extends JavaPlugin
 		pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blistener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_PLACE, blistener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.BLOCK_DAMAGE, blistener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.CREATURE_SPAWN, elistener, Event.Priority.Normal, this);
 	}
 
@@ -2801,35 +2802,42 @@ public class DungeonBuilder extends JavaPlugin
 
 	private class MyBlockListener extends BlockListener
 	{
-		@Override public void onBlockBreak(BlockBreakEvent event)
+		private boolean canBreak(Player p, Block b)
 		{
-			Player p = event.getPlayer();
 			String name = p.getName();
 			if(!inDungeons.containsKey(name))
-				return;
+				return true;
 
 			Dungeon d = inDungeons.get(name);
 			if(d.hasAccess(name))
-				return;
+				return true;
 
-			Block b = event.getBlock();
 			if(d.hasDefaultPermission("dungeonbuilder.blocks.breaktype." + b.getType().toString()))
-				return;
+				return true;
 
 			if(d.hasDefaultPermission("*") || d.hasDefaultPermission("dungeonbuilder.blocks.breaktype.*"))
-				return;
+				return true;
 
-			String node = "dungeonbuilder.blocks.breakin." + d.getOwner() + "." + d.getName();
-			boolean allowed = checkPermission(p, node, false);
-			if(!allowed)
-			{
+			return false;
+		}
+
+		@Override public void onBlockDamage(BlockDamageEvent event)
+		{
+			Player p = event.getPlayer();
+			Block b = event.getBlock();
+
+			if(!canBreak(p, b))
 				event.setCancelled(true);
-				return;
-			}
 
-			node = "dungeonbuilder.blocks.breaktype." + b.getType().toString();
-			allowed = checkPermission(p, node, false);
-			event.setCancelled(!allowed);
+		}
+
+		@Override public void onBlockBreak(BlockBreakEvent event)
+		{
+			Player p = event.getPlayer();
+			Block b = event.getBlock();
+			
+			if(!canBreak(p, b))
+				event.setCancelled(true);
 		}
 
 		@Override public void onBlockPlace(BlockPlaceEvent event)
