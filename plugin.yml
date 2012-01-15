@@ -481,3 +481,15 @@ commands:
     description: List the monster spawns that must be dead before the dungeon is finished
     usage: /listRequiredDeaths dungeon-alias
     permission: dungeonbuilder.dungeons.trigger
+  addMonsterDeathTrigger:
+    description: Add a trigger that will fire when a specific monster spawn dies
+    usage: /addMonsterDeathTrigger dungeon-alias monster-alias script-function
+    permission: dungeonbuilder.dungeons.trigger
+  removeMonsterDeathTrigger:
+    description: Remove a monster death trigger
+    usage: /removeMonsterDeathTrigger dungeon-alias monster-alias
+    permission: dungeonbuilder.dungeons.trigger
+  listMonsterDeathTriggers:
+    description: List all monster death triggers
+    usage: /listMonsterDeathTriggers dungeon-alias
+    permission: dungeonbuilder.dungeons.trigger

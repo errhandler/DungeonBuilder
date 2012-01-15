@@ -2348,10 +2348,72 @@ public class Dungeon implements Comparable<Dungeon>
 		return true;
 	}
 
+	public boolean addMonsterDeathTrigger(String monster, String func)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.getAlias().equals(monster))
+				continue;
+			
+			mi.setDeathTrigger(func);
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean removeMonsterDeathTrigger(String monster)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.getAlias().equals(monster))
+				continue;
+			
+			mi.setDeathTrigger(null);
+			return true;
+		}
+
+		return false;
+	}
+
+	public ArrayList<String> listMonsterDeathTriggers()
+	{
+		ArrayList<String> retVal = new ArrayList<String>();
+		for(MonsterInfo mi : savedMonsters)
+		{
+			String trigger = mi.getDeathTrigger();
+			if(trigger != null)
+				retVal.add(mi.getAlias() + "(" + trigger + ")");
+		}
+
+		return retVal;
+	}
+
+	public boolean checkEntityDeath(Entity e)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.containsMonster(e))
+				continue;
+
+			if(!mi.areMonstersDead())
+				continue;
+
+			String func = mi.getDeathTrigger();
+			if(func != null)
+			{
+				ScriptManager.runScript(this, plugin.server, null, plugin, func);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private class MonsterInfo
 	{
 		private Location loc;
-		private String alias, type;
+		private String alias, type, deathTrigger;
 		private ArrayList<Entity> liveMonsters = new ArrayList<Entity>();
 		private int count = 1;
 		private boolean requiresDeath = false;
@@ -2377,6 +2439,8 @@ public class Dungeon implements Comparable<Dungeon>
 					this.count = Integer.parseInt(comps[5]);
 				if(comps.length >= 7)
 					this.requiresDeath = Boolean.parseBoolean(comps[6]);
+				if(comps.length >= 8)
+					this.deathTrigger = comps[7];
 			}
 			catch(Exception e)
 			{
@@ -2390,11 +2454,15 @@ public class Dungeon implements Comparable<Dungeon>
 			this.alias = alias;
 			this.type = type;
 			this.count = count;
+			this.deathTrigger = null;
 		}
 
 		public String getLine(boolean relative)
 		{
 			String retVal = "M:" + alias + "," + createLocationString(loc, relative) + "," + type + "," + count + "," + requiresDeath;
+			if(deathTrigger != null)
+				retVal = retVal + "," + deathTrigger;
+
 			return retVal;
 		}
 
@@ -2411,6 +2479,11 @@ public class Dungeon implements Comparable<Dungeon>
 		public void setRequiresDeath(boolean require)
 		{
 			requiresDeath = require;
+		}
+
+		public void setDeathTrigger(String trigger)
+		{
+			deathTrigger = trigger;
 		}
 
 		public String getType()
@@ -2482,6 +2555,16 @@ public class Dungeon implements Comparable<Dungeon>
 			}
 
 			return true;
+		}
+
+		public boolean containsMonster(Entity e)
+		{
+			return liveMonsters.contains(e);
+		}
+
+		public String getDeathTrigger()
+		{
+			return deathTrigger;
 		}
 	}
 

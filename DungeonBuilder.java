@@ -225,6 +225,7 @@ public class DungeonBuilder extends JavaPlugin
 		pm.registerEvent(Event.Type.BLOCK_PLACE, blistener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_DAMAGE, blistener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.CREATURE_SPAWN, elistener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.ENTITY_DEATH, elistener, Event.Priority.Normal, this);
 	}
 
 	@Override public void onDisable()
@@ -2777,6 +2778,83 @@ public class DungeonBuilder extends JavaPlugin
 			sender.sendMessage(monsters.toString());
 		}
 
+		if(label.equals("addmonsterdeathtrigger") && checkPermission(player, "dungeonbuilder.dungeons.trigger"))
+		{
+			if(args.length < 3)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String monster = args[1];
+			String func = args[2];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			if(d.addMonsterDeathTrigger(monster, func))
+				sender.sendMessage("Dungeon updated.");
+			else
+				sender.sendMessage("Monster alias not found");
+		}
+
+		if(label.equals("removemonsterdeathtrigger") && checkPermission(player, "dungeonbuilder.dungeons.trigger"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String monster = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			if(d.removeMonsterDeathTrigger(monster))
+				sender.sendMessage("Dungeon updated.");
+			else
+				sender.sendMessage("Monster alias not found");
+		}
+
+		if(label.equals("listmonsterdeathtriggers") && checkPermission(player, "dungeonbuilder.dungeons.trigger"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			StringBuffer sb = new StringBuffer();
+			for(String trigger : d.listMonsterDeathTriggers())
+			{
+				if(sb.length() > 0)
+					sb.append(",");
+				sb.append(trigger);
+			}
+
+			sender.sendMessage(sb.toString());
+		}
+
 		return true;
 	}
 
@@ -2814,6 +2892,23 @@ public class DungeonBuilder extends JavaPlugin
 						event.setCancelled(true);
 						return;
 					}
+				}
+			}
+		}
+
+		public void onEntityDeath(EntityDeathEvent event)
+		{
+			Entity e = event.getEntity();
+			Location loc = e.getLocation();
+			for(String key : dungeonMap.keySet())
+			{
+				for(Dungeon d : dungeonMap.get(key))
+				{
+					if(!d.containsLocation(loc))
+						continue;
+
+					if(d.checkEntityDeath(e))
+						return;
 				}
 			}
 		}
