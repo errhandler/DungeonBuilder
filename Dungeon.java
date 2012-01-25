@@ -969,6 +969,9 @@ public class Dungeon implements Comparable<Dungeon>
 							player.sendMessage("Dungeon loaded");
 						return;
 					}
+					Chunk c = blocks.get(index).getBlock().getChunk();
+					if(!world.isChunkLoaded(c))
+						world.loadChunk(c);
 					blocks.get(index).setBlock();
 				}
 			}}, (i/chunksize)*10);
