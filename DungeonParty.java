@@ -19,25 +19,14 @@ public class DungeonParty
 	{
 	}
 
+	public DungeonParty(HeroParty hparty)
+	{
+		heroParty = hparty;
+	}
+
 	public DungeonParty(String leader, Server server)
 	{
-		if(DungeonBuilder.heroesPlugin != null)
-		{
-			Player leadPlayer = server.getPlayer(leader);
-
-			PartyManager pm = DungeonBuilder.heroesPlugin.getPartyManager();
-			for(HeroParty party : pm.getParties())
-			{
-				if(party.isPartyMember(leadPlayer))
-				{
-					heroParty = party;
-					break;
-				}
-			}
-		}
-		else
-			heroParty = null;
-
+		heroParty = null;
 		this.leader = leader;
 		this.server = server;
 		members = new HashSet<String>();

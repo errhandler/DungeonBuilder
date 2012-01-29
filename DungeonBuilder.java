@@ -17,6 +17,8 @@ import com.nijikokun.register.payment.*;
 import com.nijikokun.register.payment.Method.MethodAccount;
 import org.bukkit.plugin.Plugin;
 import com.herocraftonline.dev.heroes.*;
+import com.herocraftonline.dev.heroes.party.*;
+import com.herocraftonline.dev.heroes.hero.*;
 import java.util.logging.*;
 import java.util.concurrent.*;
 import java.util.*;
@@ -28,7 +30,7 @@ public class DungeonBuilder extends JavaPlugin
 	public static String dungeonRoot = "plugins/dungeons";
 	public static boolean proximityCheck = true, enableSuperperms = true;
 	public static boolean dontSaveBlocks = false, enableMonsters = false;
-	public static Event.Priority respawnPriority = Event.Priority.Normal;
+	public static EventPriority respawnPriority = EventPriority.NORMAL;
 	public static int loadChunkSize = 3000;
 	public Server server;
 	public static Heroes heroesPlugin;
@@ -111,12 +113,12 @@ public class DungeonBuilder extends JavaPlugin
 					String temp = line.substring(19);
 					try
 					{
-						respawnPriority = Event.Priority.valueOf(temp);
+						respawnPriority = EventPriority.valueOf(temp);
 					}
 					catch(Exception e)
 					{
 						System.out.println("Invalid respawn priority: " + temp);
-						respawnPriority = Event.Priority.Normal;
+						respawnPriority = EventPriority.NORMAL;
 					}
 				}
 				if(line.startsWith("dontSaveBlocks="))
@@ -195,7 +197,7 @@ public class DungeonBuilder extends JavaPlugin
 
 	@Override public void onEnable()
 	{
-		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.0) Enabled");
+		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.1) Enabled");
 
 		server = this.getServer();
 
@@ -221,17 +223,11 @@ public class DungeonBuilder extends JavaPlugin
 		MyBlockListener blistener = new MyBlockListener();
 		MyEntityListener elistener = new MyEntityListener();
 		economyListener = new MyServerListener();
-		pm.registerEvent(Event.Type.PLUGIN_ENABLE, economyListener, Event.Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLUGIN_DISABLE, economyListener, Event.Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, respawnPriority, this);
-		pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_BREAK, blistener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_PLACE, blistener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_DAMAGE, blistener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.CREATURE_SPAWN, elistener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.ENTITY_DEATH, elistener, Event.Priority.Normal, this);
+		pm.registerEvents(playerListener, this);
+		pm.registerEvent(PlayerRespawnEvent.class, playerListener, respawnPriority, playerListener, this);
+		pm.registerEvents(blistener, this);
+		pm.registerEvents(elistener, this);
+		pm.registerEvents(economyListener, this);
 	}
 
 	@Override public void onDisable()
@@ -2888,8 +2884,9 @@ public class DungeonBuilder extends JavaPlugin
 		return null;
 	}
 
-	private class MyEntityListener extends EntityListener
+	private class MyEntityListener implements Listener
 	{
+		@EventHandler
 		public void onCreatureSpawn(CreatureSpawnEvent event)
 		{
 			if(enableMonsters)
@@ -2910,6 +2907,7 @@ public class DungeonBuilder extends JavaPlugin
 			}
 		}
 
+		@EventHandler
 		public void onEntityDeath(EntityDeathEvent event)
 		{
 			Entity e = event.getEntity();
@@ -2928,7 +2926,7 @@ public class DungeonBuilder extends JavaPlugin
 		}
 	}
 
-	private class MyServerListener extends ServerListener
+	private class MyServerListener implements Listener
 	{
 		public Methods m;
 
@@ -2950,7 +2948,8 @@ public class DungeonBuilder extends JavaPlugin
 			return m.hasMethod();
 		}
 
-		@Override public void onPluginDisable(PluginDisableEvent event)
+		@EventHandler
+		public void onPluginDisable(PluginDisableEvent event)
 		{
 			if(!m.hasMethod())
 				return;
@@ -2958,7 +2957,8 @@ public class DungeonBuilder extends JavaPlugin
 			m.checkDisabled(event.getPlugin());
 		}
 
-		@Override public void onPluginEnable(PluginEnableEvent event)
+		@EventHandler
+		public void onPluginEnable(PluginEnableEvent event)
 		{
 			if(m.hasMethod())
 				return;
@@ -2967,7 +2967,7 @@ public class DungeonBuilder extends JavaPlugin
 		}
 	}
 
-	private class MyBlockListener extends BlockListener
+	private class MyBlockListener implements Listener
 	{
 		private boolean canBreak(Player p, Block b)
 		{
@@ -2988,7 +2988,8 @@ public class DungeonBuilder extends JavaPlugin
 			return false;
 		}
 
-		@Override public void onBlockDamage(BlockDamageEvent event)
+		@EventHandler
+		public void onBlockDamage(BlockDamageEvent event)
 		{
 			Player p = event.getPlayer();
 			Block b = event.getBlock();
@@ -2998,7 +2999,8 @@ public class DungeonBuilder extends JavaPlugin
 
 		}
 
-		@Override public void onBlockBreak(BlockBreakEvent event)
+		@EventHandler
+		public void onBlockBreak(BlockBreakEvent event)
 		{
 			Player p = event.getPlayer();
 			Block b = event.getBlock();
@@ -3007,7 +3009,8 @@ public class DungeonBuilder extends JavaPlugin
 				event.setCancelled(true);
 		}
 
-		@Override public void onBlockPlace(BlockPlaceEvent event)
+		@EventHandler
+		public void onBlockPlace(BlockPlaceEvent event)
 		{
 			Player p = event.getPlayer();
 			String name = p.getName();
@@ -3024,18 +3027,8 @@ public class DungeonBuilder extends JavaPlugin
 
 			if(d.hasDefaultPermission("*") || d.hasDefaultPermission("dungeonbuilder.blocks.placetype.*"))
 				return;
-
-			String node = "dungeonbuilder.blocks.placein." + d.getOwner() + "." + d.getName();
-			boolean allowed = checkPermission(p, node, false);
-			if(!allowed)
-			{
-				event.setCancelled(true);
-				return;
-			}
-
-			node = "dungeonbuilder.blocks.placetype." + b.getType().toString();
-			allowed = checkPermission(p, node, false);
-			event.setCancelled(!allowed);
+			
+			event.setCancelled(true);
 		}
 	}
 
@@ -3461,6 +3454,23 @@ public class DungeonBuilder extends JavaPlugin
 
 		activeSavePoints.put(playername, savePoint);
 		return true;
+	}
+
+	public HeroParty getHeroParty(Player p)
+	{
+		if(DungeonBuilder.heroesPlugin != null)
+		{
+			PartyManager pm = DungeonBuilder.heroesPlugin.getPartyManager();
+			for(HeroParty party : pm.getParties())
+			{
+				if(party.isPartyMember(p))
+				{
+					return party;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private class DungeonMarker

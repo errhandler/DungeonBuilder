@@ -4,10 +4,13 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.event.*;
+import org.bukkit.plugin.*;
 import java.util.concurrent.*;
 import java.util.*;
+import com.herocraftonline.dev.heroes.party.*;
+import com.herocraftonline.dev.heroes.hero.*;
 
-public class DBPlayerListener extends PlayerListener
+public class DBPlayerListener implements Listener, EventExecutor
 {
 	private ConcurrentHashMap<String, Thread> runningThreads = new ConcurrentHashMap<String, Thread>();
 	public ConcurrentHashMap<String, LocationWrapper> recordingLocations = new ConcurrentHashMap<String, LocationWrapper>();
@@ -29,11 +32,16 @@ public class DBPlayerListener extends PlayerListener
 		this.plugin = plugin;
 	}
 
-	@Override public void onPlayerRespawn(PlayerRespawnEvent event)
+	@Override public void execute(Listener listener, Event event)
+	{
+		onPlayerRespawn((PlayerRespawnEvent)event);
+	}
+
+	public void onPlayerRespawn(PlayerRespawnEvent event)
 	{
 		Player p = event.getPlayer();
 
-		if(plugin.respawnPriority == Event.Priority.Monitor)
+		if(plugin.respawnPriority == EventPriority.MONITOR)
 		{
 			plugin.removePlayerFromDungeon(p, false);
 			return;
@@ -56,13 +64,15 @@ public class DBPlayerListener extends PlayerListener
 		}
 	}
 
-	@Override public void onPlayerQuit(PlayerQuitEvent event)
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event)
 	{
 		Player p = event.getPlayer();
 		plugin.idleTimer.put(p.getName(), System.currentTimeMillis());
 	}
 
-	@Override public void onPlayerJoin(PlayerJoinEvent event)
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event)
 	{
 		final Player p = event.getPlayer();
 
@@ -83,7 +93,8 @@ public class DBPlayerListener extends PlayerListener
 		}
 	}
 
-	@Override public void onPlayerMove(final PlayerMoveEvent event)
+	@EventHandler
+	public void onPlayerMove(final PlayerMoveEvent event)
 	{
 		final Player p = event.getPlayer();
 		final String name = p.getName();
@@ -174,11 +185,46 @@ public class DBPlayerListener extends PlayerListener
 						Dungeon.PartyStatus status = null;
 						DungeonParty dp = null;
 						if(plugin.inParty.containsKey(p.getName()))	
-							dp = plugin.inParty.get(p.getName());
-						else if(d.getMinPartySize() == 1)
 						{
-							dp = new DungeonParty(p.getName(), plugin.server);
-							plugin.inParty.put(p.getName(), dp);
+							dp = plugin.inParty.get(p.getName());
+							HeroParty hp = plugin.getHeroParty(p);
+							HeroParty hp2 = dp.getHeroParty();
+
+							if(hp == null && hp2 != null)
+							{
+								plugin.inParty.remove(p.getName());
+								dp = null;
+							}
+
+							if(hp != null && hp2 == null)
+							{
+								dp = new DungeonParty(hp);
+								for(String partyMember : dp.listMembers())
+									plugin.inParty.put(partyMember, dp);
+							}
+
+							if(hp != null && hp2 != null && hp != hp2)
+							{
+								dp = new DungeonParty(hp);
+								for(String partyMember : dp.listMembers())
+									plugin.inParty.put(partyMember, dp);
+							}
+						}
+
+						if(dp == null)
+						{
+							HeroParty hp = plugin.getHeroParty(p);
+							if(hp != null)
+							{
+								dp = new DungeonParty(hp);
+								for(String partyMember : dp.listMembers())
+									plugin.inParty.put(partyMember, dp);
+							}
+							else if(d.getMinPartySize() == 1)
+							{
+								dp = new DungeonParty(p.getName(), plugin.server);
+								plugin.inParty.put(p.getName(), dp);
+							}
 						}
 
 						if(dp == null || !d.validPartySize(dp.getSize()))
