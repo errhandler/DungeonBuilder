@@ -936,7 +936,7 @@ public class Dungeon implements Comparable<Dungeon>
 	{
 		clearSpecial(Material.LAVA, Material.STATIONARY_LAVA, Material.WATER, Material.STATIONARY_WATER, Material.REDSTONE_WIRE, Material.REDSTONE_TORCH_OFF, 
 			     Material.REDSTONE_TORCH_ON, Material.REDSTONE, Material.DETECTOR_RAIL, Material.LEVER, Material.STONE_BUTTON, Material.WOOD_PLATE,
-			     Material.STONE_PLATE, Material.POWERED_RAIL, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON);
+			     Material.STONE_PLATE, Material.POWERED_RAIL, Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.SUGAR_CANE_BLOCK);
 	}
 
 	private void loadDungeonBlocks()

@@ -4,6 +4,8 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.material.*;
 import org.bukkit.entity.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
 import java.util.*;
 
 public class BlockInfo implements Comparable<BlockInfo>
@@ -12,7 +14,60 @@ public class BlockInfo implements Comparable<BlockInfo>
 	private Material m;
 	private Byte data;
 	private String metaStr = null;
-	private Entity entity = null;
+	private org.bukkit.entity.Entity entity = null;
+
+	private static HashMap<Material, Integer> priorityMap = new HashMap<Material, Integer>();
+	private static final Integer DEFAULT_PRIORITY = 9999;
+
+	static
+	{
+		try
+		{
+			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(CommandBuilder.class.getResourceAsStream("/BlockPriority.xml"));
+			NodeList nodes = doc.getElementsByTagName("BlockPriority");
+			for(int i = 0; i < nodes.getLength(); i++)
+			{
+				Node parent = nodes.item(i);
+				NodeList children = parent.getChildNodes();
+				for(int n = 0; n < children.getLength(); n++)
+				{
+					Node child = children.item(n);
+					NamedNodeMap atts = child.getAttributes();
+
+					String tag = child.getNodeName();
+					if(!tag.equals("Block"))
+						continue;
+
+					String materialName = atts.getNamedItem("material").getNodeValue();
+					String priority = atts.getNamedItem("priority").getNodeValue();
+
+					Material m = Material.matchMaterial(materialName);
+					Integer p = DEFAULT_PRIORITY;
+					if(m == null)
+					{
+						System.out.println("Unrecognized material: " + materialName);
+						continue;
+					}
+
+					try
+					{
+						p = Integer.parseInt(priority);
+					}
+					catch(Exception e)
+					{
+						System.out.println("Invalid priority: " + priority);
+						continue;
+					}
+
+					priorityMap.put(m, p);
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 
 	public BlockInfo(Block b)
 	{
@@ -59,12 +114,12 @@ public class BlockInfo implements Comparable<BlockInfo>
 		}
 	}
 
-	public Entity getEntity()
+	public org.bukkit.entity.Entity getEntity()
 	{
 		return entity;
 	}
 	
-	public void setEntity(Entity e)
+	public void setEntity(org.bukkit.entity.Entity e)
 	{
 		this.entity = e;
 	}
@@ -105,6 +160,14 @@ public class BlockInfo implements Comparable<BlockInfo>
 		catch(Exception e)
 		{
 		}
+	}
+
+	public boolean isEntityBlock()
+	{
+		if(metaStr != null)
+			return metaStr.startsWith("ENTITY");
+		
+		return false;
 	}
 
 	public Block getBlock()
@@ -195,42 +258,92 @@ public class BlockInfo implements Comparable<BlockInfo>
 				return false;
 		}
 	}
-	
+
 	@Override public int compareTo(BlockInfo bi2)
 	{
-		boolean isLiquid = false, isLiquid2 = false;
-		isLiquid = isLiquid();
-		isLiquid2 = bi2.isLiquid();
+		boolean entity1 = isEntityBlock();
+		boolean entity2 = bi2.isEntityBlock();
 
-		//Sugar cane needs to be loaded last since water needs to be present first
-		if(m == Material.SUGAR_CANE_BLOCK && bi2.getType() != Material.SUGAR_CANE_BLOCK)
-			return 1;
-		if(m != Material.SUGAR_CANE_BLOCK && bi2.getType() == Material.SUGAR_CANE_BLOCK)
+		if(!entity1 && entity2)
 			return -1;
-
-		//Load liquids last (but before sugar canes)
-		if(isLiquid && !isLiquid2)
-			return 1;
-		if(!isLiquid && isLiquid2)
-			return -1;
-
-		//Load redstone torches first (before wires and other redstone related objects)
-		if(isRedstoneTorch() && !bi2.isRedstoneTorch())
-			return -1;
-		if(!isRedstoneTorch() && bi2.isRedstoneTorch())
+		if(entity1 && !entity2)
 			return 1;
 
-		//Everything else gets loaded based on if it is an attachable object or not.
-		if(isLiquid == isLiquid2)
-		{
-			if(isAttachable() && bi2.isAttachable())
-				return 0;
-			if(isAttachable() && !bi2.isAttachable())
-				return 1;
-			if(!isAttachable() && bi2.isAttachable())
-				return -1;
-		}
+		int priority1 = DEFAULT_PRIORITY;
+		int priority2 = DEFAULT_PRIORITY;
+
+		if(priorityMap.containsKey(m))
+			priority1 = priorityMap.get(m);
+		if(priorityMap.containsKey(bi2.getType()))
+			priority2 = priorityMap.get(bi2.getType());
+
+		if(priority1 > priority2)
+			return -1;
+		if(priority1 < priority2)
+			return 1;
+
+		int y1 = b.getY();
+		int y2 = bi2.getBlock().getY();
+
+		if(y1 < y2)
+			return -1;
+		if(y1 > y2)
+			return 1;
+
+		int x1 = b.getX();
+		int x2 = bi2.getBlock().getX();
+
+		if(x1 < x2)
+			return -1;
+		if(x1 > x2)
+			return 1;
+
+		int z1 = b.getZ();
+		int z2 = bi2.getBlock().getZ();
+
+		if(z1 < z2)
+			return -1;
+		if(z1 > z2)
+			return 1;
 
 		return 0;
 	}
+	
+	//@Override public int compareTo(BlockInfo bi2)
+	//{
+	//	boolean isLiquid = false, isLiquid2 = false;
+	//	isLiquid = isLiquid();
+	//	isLiquid2 = bi2.isLiquid();
+
+	//	//Sugar cane needs to be loaded last since water needs to be present first
+	//	if(m == Material.SUGAR_CANE_BLOCK && bi2.getType() != Material.SUGAR_CANE_BLOCK)
+	//		return 1;
+	//	if(m != Material.SUGAR_CANE_BLOCK && bi2.getType() == Material.SUGAR_CANE_BLOCK)
+	//		return -1;
+
+	//	//Load liquids last (but before sugar canes)
+	//	if(isLiquid && !isLiquid2)
+	//		return 1;
+	//	if(!isLiquid && isLiquid2)
+	//		return -1;
+
+	//	//Load redstone torches first (before wires and other redstone related objects)
+	//	if(isRedstoneTorch() && !bi2.isRedstoneTorch())
+	//		return -1;
+	//	if(!isRedstoneTorch() && bi2.isRedstoneTorch())
+	//		return 1;
+
+	//	//Everything else gets loaded based on if it is an attachable object or not.
+	//	if(isLiquid == isLiquid2)
+	//	{
+	//		if(isAttachable() && bi2.isAttachable())
+	//			return 0;
+	//		if(isAttachable() && !bi2.isAttachable())
+	//			return 1;
+	//		if(!isAttachable() && bi2.isAttachable())
+	//			return -1;
+	//	}
+
+	//	return 0;
+	//}
 }
