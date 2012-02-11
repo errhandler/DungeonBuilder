@@ -2443,7 +2443,7 @@ public class Dungeon implements Comparable<Dungeon>
 		for(MonsterInfo mi : savedMonsters)
 		{
 			String trigger = mi.getDeathTrigger();
-			if(trigger != null)
+			if(trigger.length() > 0)
 				retVal.add(mi.getAlias() + "(" + trigger + ")");
 		}
 
@@ -2461,14 +2461,45 @@ public class Dungeon implements Comparable<Dungeon>
 				continue;
 
 			String func = mi.getDeathTrigger();
-			if(func != null)
+			if(func.length() > 0)
 			{
-				ScriptManager.runScript(this, plugin.server, null, plugin, func);
+				Player killer = null;
+				if(e instanceof LivingEntity)
+					killer = ((LivingEntity)e).getKiller();
+
+				ScriptManager.runScript(this, plugin.server, killer, plugin, func);
+				String script = mi.getScript();
+				if(script.length() > 0)
+					ScriptManager.runMonsterScript(this, plugin.server, killer, plugin, e, script, "monster_death");
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	public void entityDamage(Entity e)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.containsMonster(e))
+				continue;
+
+			String script = mi.getScript();
+			if(script.length() > 0)
+			{
+				Player target = null;
+				if(e instanceof Creature)
+				{
+					Entity temp = ((Creature)e).getTarget();
+					if(temp instanceof Player)
+						target = (Player)temp;
+				}
+				ScriptManager.runMonsterScript(this, plugin.server, target, plugin, e, script, "monster_damage");
+			}
+
+			return;
+		}
 	}
 
 	public void addIgnoreType(Material m)
@@ -2486,10 +2517,21 @@ public class Dungeon implements Comparable<Dungeon>
 		return new HashSet<Material>(ignoreTypes);
 	}
 
+	public void setMonsterScript(String alias, String script)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.getAlias().equals(alias))
+				continue;
+
+			mi.setScript(script);
+		}
+	}
+
 	private class MonsterInfo
 	{
 		private Location loc;
-		private String alias, type, deathTrigger;
+		private String alias, type, deathTrigger, script;
 		private ArrayList<Entity> liveMonsters = new ArrayList<Entity>();
 		private int count = 1;
 		private boolean requiresDeath = false;
@@ -2511,12 +2553,16 @@ public class Dungeon implements Comparable<Dungeon>
 
 			try
 			{
+				this.script = "";
+				this.deathTrigger = "";
 				if(comps.length >= 6)
 					this.count = Integer.parseInt(comps[5]);
 				if(comps.length >= 7)
 					this.requiresDeath = Boolean.parseBoolean(comps[6]);
 				if(comps.length >= 8)
 					this.deathTrigger = comps[7];
+				if(comps.length >= 9)
+					this.script = comps[8];
 			}
 			catch(Exception e)
 			{
@@ -2530,14 +2576,13 @@ public class Dungeon implements Comparable<Dungeon>
 			this.alias = alias;
 			this.type = type;
 			this.count = count;
-			this.deathTrigger = null;
+			this.deathTrigger = "";
+			this.script = "";
 		}
 
 		public String getLine(boolean relative)
 		{
-			String retVal = "M:" + alias + "," + createLocationString(loc, relative) + "," + type + "," + count + "," + requiresDeath;
-			if(deathTrigger != null)
-				retVal = retVal + "," + deathTrigger;
+			String retVal = "M:" + alias + "," + createLocationString(loc, relative) + "," + type + "," + count + "," + requiresDeath + "," + deathTrigger + "," + script;
 
 			return retVal;
 		}
@@ -2605,7 +2650,10 @@ public class Dungeon implements Comparable<Dungeon>
 
 			for(int i = 0; i < count; i++)
 			{
-				liveMonsters.add(world.spawnCreature(loc, ct));
+				Entity e = world.spawnCreature(loc, ct);
+				liveMonsters.add(e);
+				if(script.length() > 0)
+					ScriptManager.runMonsterScript(Dungeon.this, plugin.server, null, plugin, e, script, "monster_spawn");
 			}
 		}
 
@@ -2641,6 +2689,16 @@ public class Dungeon implements Comparable<Dungeon>
 		public String getDeathTrigger()
 		{
 			return deathTrigger;
+		}
+
+		public String getScript()
+		{
+			return script;
+		}
+
+		public void setScript(String script)
+		{
+			this.script = script;
 		}
 	}
 

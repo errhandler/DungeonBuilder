@@ -2943,6 +2943,29 @@ public class DungeonBuilder extends JavaPlugin
 			sender.sendMessage(sb.toString());
 		}
 
+		if(label.equals("setmonsterscript") && checkPermission(player, "dungeonbuilder.dungeons.addmonster"))
+		{
+			if(args.length < 3)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String monster = args[1];
+			String script = args[2];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			d.setMonsterScript(monster, script);
+			sender.sendMessage("Monster script updated");
+		}
+
 		return true;
 	}
 
@@ -2999,6 +3022,24 @@ public class DungeonBuilder extends JavaPlugin
 
 					if(d.checkEntityDeath(e))
 						return;
+				}
+			}
+		}
+
+		@EventHandler
+		public void onEntityDamage(EntityDamageEvent event)
+		{
+			Entity e = event.getEntity();
+			Location loc = e.getLocation();
+			for(String key : dungeonMap.keySet())
+			{
+				for(Dungeon d : dungeonMap.get(key))
+				{
+					if(!d.containsLocation(loc))
+						continue;
+
+					d.entityDamage(e);
+					return;
 				}
 			}
 		}
@@ -3310,6 +3351,8 @@ public class DungeonBuilder extends JavaPlugin
 		for(String playername : dungeonDir.list())
 		{
 			if(playername.equals("templates"))
+				continue;
+			if(playername.equals("monsters"))
 				continue;
 
 			File dungeonFiles = new File(dungeonRoot + "/" + playername);

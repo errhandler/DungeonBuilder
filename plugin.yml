@@ -501,3 +501,7 @@ commands:
     description: List the types of blocks that are being ignored
     usage: /ignoreBlocksList dungeon-alias
     permission: dungeonbuilder.dungeons.save
+  setMonsterScript:
+    description: Use a custom script for managing a monster's behavior
+    usage: /setMonsterScript dungeon-alias monster-alias script-name
+    permission: dungeonbuilder.dungeons.addmonster

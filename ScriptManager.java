@@ -5,14 +5,17 @@ import java.io.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
+import java.util.*;
 
 public class ScriptManager
 {
 	private static ScriptEngineManager factory;
+	private static HashMap<String, HashMap<String, Object>> persistedObjects;
 
 	static
 	{
 		factory = new ScriptEngineManager();
+		persistedObjects = new HashMap<String, HashMap<String, Object>>();
 	}
 
 	public static boolean scriptingEnabled()
@@ -65,10 +68,18 @@ public class ScriptManager
 			return;
 		}
 
-		engine.put("dungeon", d);
-		engine.put("server", s);
-		engine.put("player", p);
-		engine.put("plugin", plugin);
+		if(!persistedObjects.containsKey(script))
+			persistedObjects.put(script, new HashMap<String, Object>());
+
+		if(d != null)
+			engine.put("dungeon", d);
+		if(s != null)
+			engine.put("server", s);
+		if(p != null)
+			engine.put("player", p);
+		if(plugin != null)
+			engine.put("plugin", plugin);
+		engine.put("persistedObjects", persistedObjects.get(script));
 		try
 		{
 			engine.eval(new FileReader(script));
@@ -77,6 +88,65 @@ public class ScriptManager
 				Invocable inv = (Invocable)engine;
 				inv.invokeFunction(methodName);	
 			}
+		}
+		catch(NoSuchMethodException nsme)
+		{
+			//Ignore
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static void runMonsterScript(Dungeon d, Server s, Player p, Plugin plugin, Entity m, String scriptName, String methodName)
+	{
+		File script = new File("plugins/dungeons/monsters/" + scriptName);
+		if(!script.exists())
+		{
+			System.out.println("Unable to locate script: " + script.getPath());
+			return;
+		}
+
+		ScriptEngine engine = null;
+		if(scriptName.endsWith("groovy"))
+			engine = factory.getEngineByName("groovy");
+		if(scriptName.endsWith("js"))
+			engine = factory.getEngineByName("js");
+
+		if(engine == null)
+		{
+			System.out.println("Unable to find engine for script: " + script.getPath());
+			return;
+		}
+
+		if(!persistedObjects.containsKey(scriptName))
+			persistedObjects.put(scriptName, new HashMap<String, Object>());
+
+		if(d != null)
+			engine.put("dungeon", d);
+		if(s != null)
+			engine.put("server", s);
+		if(p != null)
+			engine.put("player", p);
+		if(plugin != null)
+			engine.put("plugin", plugin);
+		if(m != null)
+			engine.put("monster", m);
+		engine.put("persistedObjects", persistedObjects.get(scriptName));
+
+		try
+		{
+			engine.eval(new FileReader(script));
+			if(engine instanceof Invocable)
+			{
+				Invocable inv = (Invocable)engine;
+				inv.invokeFunction(methodName);
+			}
+		}
+		catch(NoSuchMethodException nsme)
+		{
+			//Ignore
 		}
 		catch(Exception e)
 		{
