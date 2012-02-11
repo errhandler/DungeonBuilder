@@ -40,6 +40,7 @@ public class Dungeon implements Comparable<Dungeon>
 	private ArrayList<DungeonParty> partyList = new ArrayList<DungeonParty>();
 	private volatile DungeonParty activeParty;
 	private volatile PartyStatus currentStatus;
+	private HashSet<Material> ignoreTypes = new HashSet<Material>();
 
 	public enum PartyStatus
 	{
@@ -864,6 +865,11 @@ public class Dungeon implements Comparable<Dungeon>
 					for(double z = -halfwidth; z <= halfwidth; z += 1.0)
 					{
 						newLoc.setZ(zbase + z);	
+						Block b = newLoc.getBlock();
+
+						if(ignoreTypes.contains(b.getType()))
+							continue;
+
 						blocks.add(new BlockInfo(newLoc.getBlock()));
 					}
 				}
@@ -1162,6 +1168,18 @@ public class Dungeon implements Comparable<Dungeon>
 				pw.print("Inventory:" + inv.toString() + "\n");
 			}
 
+			if(ignoreTypes.size() > 0)
+			{
+				StringBuffer ignore = new StringBuffer();
+				for(Material m : ignoreTypes)
+				{
+					if(ignore.length() > 0)
+						ignore.append(",");
+					ignore.append(m.toString());
+				}
+				pw.print("Ignore:" + ignore.toString() + "\n");
+			}
+
 			if(published)
 			{
 				World tworld = teleporter.getWorld();
@@ -1378,6 +1396,17 @@ public class Dungeon implements Comparable<Dungeon>
 			invPermits.clear();
 			for(String item : comps)
 				invPermits.add(item);
+
+			line = br.readLine();
+		}
+
+		if(line.startsWith("Ignore:"))
+		{
+			String temp = line.substring(7);
+			String [] comps = temp.split(",");
+			ignoreTypes.clear();
+			for(String mat : comps)
+				ignoreTypes.add(Material.matchMaterial(mat));
 
 			line = br.readLine();
 		}
@@ -2440,6 +2469,21 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 
 		return false;
+	}
+
+	public void addIgnoreType(Material m)
+	{
+		ignoreTypes.add(m);
+	}
+
+	public void clearIgnoreTypes()
+	{
+		ignoreTypes.clear();
+	}
+
+	public HashSet<Material> listIgnoreTypes()
+	{
+		return new HashSet<Material>(ignoreTypes);
 	}
 
 	private class MonsterInfo

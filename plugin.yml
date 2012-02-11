@@ -489,3 +489,15 @@ commands:
     description: List all monster death triggers
     usage: /listMonsterDeathTriggers dungeon-alias
     permission: dungeonbuilder.dungeons.trigger
+  ignoreBlocksAdd:
+    description: Add a block type to ignore when saving dungeons
+    usage: /ignoreBlocksAdd dungeon-alias type
+    permission: dungeonbuilder.dungeons.save
+  ignoreBlocksClear:
+    description: Clear the list of block types to ignore
+    usage: /ignoreBlocksClear dungeon-alias
+    permission: dungeonbuilder.dungeons.save
+  ignoreBlocksList:
+    description: List the types of blocks that are being ignored
+    usage: /ignoreBlocksList dungeon-alias
+    permission: dungeonbuilder.dungeons.save

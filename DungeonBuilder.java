@@ -2865,6 +2865,84 @@ public class DungeonBuilder extends JavaPlugin
 			sender.sendMessage(sb.toString());
 		}
 
+		if(label.equals("ignoreblocksadd") && checkPermission(player, "dungeonbuilder.dungeons.save"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String material = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			Material m = Material.matchMaterial(material);
+			if(m == null)
+			{
+				sender.sendMessage("Unrecognized material: " + material);
+				return true;
+			}
+
+			d.addIgnoreType(m);
+			sender.sendMessage("Now ignoring material type: " + m);
+		}
+
+		if(label.equals("ignoreblocksclear") && checkPermission(player, "dungeonbuilder.dungeons.save"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			d.clearIgnoreTypes();
+			sender.sendMessage("No longer ignoring any blocks for dungeon " + alias);
+		}
+
+		if(label.equals("ignoreblockslist") && checkPermission(player, "dungeonbuilder.dungeons.save"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			StringBuffer sb = new StringBuffer();
+			for(Material m : d.listIgnoreTypes())
+			{
+				if(sb.length() > 0)
+					sb.append(", ");
+				sb.append(m.toString());
+			}
+
+			sender.sendMessage(sb.toString());
+		}
+
 		return true;
 	}
 
