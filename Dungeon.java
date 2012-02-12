@@ -2457,22 +2457,24 @@ public class Dungeon implements Comparable<Dungeon>
 			if(!mi.containsMonster(e))
 				continue;
 
+			Player killer = null;
+			if(e instanceof LivingEntity)
+				killer = ((LivingEntity)e).getKiller();
+
+			String script = mi.getScript();
+			if(script.length() > 0)
+				ScriptManager.runMonsterScript(this, plugin.server, killer, plugin, e, script, "monster_death");
+
 			if(!mi.areMonstersDead())
-				continue;
+				return true;
 
 			String func = mi.getDeathTrigger();
 			if(func.length() > 0)
 			{
-				Player killer = null;
-				if(e instanceof LivingEntity)
-					killer = ((LivingEntity)e).getKiller();
-
 				ScriptManager.runScript(this, plugin.server, killer, plugin, func);
-				String script = mi.getScript();
-				if(script.length() > 0)
-					ScriptManager.runMonsterScript(this, plugin.server, killer, plugin, e, script, "monster_death");
-				return true;
 			}
+
+			return true;
 		}
 
 		return false;
