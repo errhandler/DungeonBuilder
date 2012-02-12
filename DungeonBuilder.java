@@ -3455,8 +3455,7 @@ public class DungeonBuilder extends JavaPlugin
 
 		if(inDungeons.containsKey(playername))
 		{
-			if(isPlayerStillInDungeon(p))
-				return true;
+			return true;
 		}
 
 		Location loc = p.getLocation();
