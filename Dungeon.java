@@ -21,7 +21,7 @@ public class Dungeon implements Comparable<Dungeon>
 	private DungeonBuilder plugin;
 	private String owner, name;
 	private Location start, center, exit, teleporter, exitdest, sphereCenter;
-	private int width, depth, height, exp = -1;
+	private int width, depth, height, exp = -1, lives = -1;
 	private long dungeonCooldown = 0;
 	private ArrayList<BlockInfo> blocks, origBlocks = null;
 	private ArrayList<Entity> liveMonsters;
@@ -1143,6 +1143,7 @@ public class Dungeon implements Comparable<Dungeon>
 				pw.print("ExpReward:" + exp + "\n");
 			pw.print("Cooldown:" + dungeonCooldown + "\n");
 			pw.print("Autoload:" + autoload + "\n");
+			pw.print("Lives:" + lives + "\n");
 
 			if(coOwners.size() > 0)
 			{
@@ -1374,6 +1375,22 @@ public class Dungeon implements Comparable<Dungeon>
 		{
 			String temp = line.substring(9);
 			this.autoload = Boolean.parseBoolean(temp);
+
+			line = br.readLine();
+		}
+
+		if(line.startsWith("Lives:"))
+		{
+			String temp = line.substring(6);
+			try
+			{
+				this.lives = Integer.parseInt(temp);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				this.lives = -1;
+			}
 
 			line = br.readLine();
 		}
@@ -2528,6 +2545,16 @@ public class Dungeon implements Comparable<Dungeon>
 
 			mi.setScript(script);
 		}
+	}
+
+	public void setLives(int lives)
+	{
+		this.lives = lives;
+	}
+
+	public int getLives()
+	{
+		return lives;
 	}
 
 	private class MonsterInfo

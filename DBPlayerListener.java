@@ -15,6 +15,7 @@ public class DBPlayerListener implements Listener, EventExecutor
 	private ConcurrentHashMap<String, Thread> runningThreads = new ConcurrentHashMap<String, Thread>();
 	public ConcurrentHashMap<String, LocationWrapper> recordingLocations = new ConcurrentHashMap<String, LocationWrapper>();
 	private HashMap<String, Long> teleportCooldowns = new HashMap<String, Long>();
+	private HashMap<String, Integer> remainingLives = new HashMap<String, Integer>();
 	private DungeonBuilder plugin;
 
 	private DBPlayerListener()
@@ -40,16 +41,41 @@ public class DBPlayerListener implements Listener, EventExecutor
 	public void onPlayerRespawn(PlayerRespawnEvent event)
 	{
 		Player p = event.getPlayer();
+		String playername = p.getName();
 
 		if(plugin.respawnPriority == EventPriority.MONITOR)
 		{
+			remainingLives.remove(playername);
 			plugin.removePlayerFromDungeon(p, false);
 			return;
 		}
 
-		String playername = p.getName();
 		if(plugin.inDungeons.containsKey(playername))
 		{
+			Dungeon d = plugin.inDungeons.get(playername);
+			if(d.getLives() > 0)
+			{
+				int lives = 1;
+				if(remainingLives.containsKey(playername))
+					lives = remainingLives.get(playername);
+				else
+					lives = d.getLives();
+
+				lives--;
+
+				if(lives == 0)
+				{
+					remainingLives.remove(playername);
+					plugin.removePlayerFromDungeon(p, false);
+					return;
+				}
+				else
+				{
+					remainingLives.put(playername, lives);
+					p.sendMessage("You have " + lives-1 + " lives remaining");
+				}
+			}
+
 			LocationWrapper lw = plugin.getSavePoint(playername);
 			if(lw != null)
 			{
@@ -58,7 +84,6 @@ public class DBPlayerListener implements Listener, EventExecutor
 			}
 			else
 			{
-				Dungeon d = plugin.inDungeons.get(playername);
 				event.setRespawnLocation(d.getStartingLocation());
 			}
 		}

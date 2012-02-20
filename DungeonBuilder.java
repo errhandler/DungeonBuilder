@@ -2966,6 +2966,57 @@ public class DungeonBuilder extends JavaPlugin
 			sender.sendMessage("Monster script updated");
 		}
 
+		if(label.equals("setplayerlives") && checkPermission(player, "dungeonbuilder.dungeons.savepoint"))
+		{
+			if(args.length < 2)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+			String lives = args[1];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+			
+			try
+			{
+				int numLives = Integer.parseInt(lives);
+				d.setLives(numLives);
+				sender.sendMessage("Dungeon updated");
+			}
+			catch(Exception e)
+			{
+				sender.sendMessage("Invalid number of lives: " + lives);
+				return false;
+			}
+		}
+
+		if(label.equals("showplayerlives") && checkPermission(player, "dungeonbuilder.dungeons.savepoint"))
+		{
+			if(args.length < 1)
+			{
+				sender.sendMessage("Invalid number of arguments");
+				return false;
+			}
+
+			String alias = args[0];
+
+			Dungeon d = lookupDungeon(alias, playername);
+			if(d == null)
+			{
+				sender.sendMessage("Unable to find dungeon by name '" + alias + "'");
+				return true;
+			}
+
+			sender.sendMessage("Lives: " + d.getLives());
+		}
+
 		return true;
 	}
 
