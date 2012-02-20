@@ -3074,6 +3074,9 @@ public class DungeonBuilder extends JavaPlugin
 		@EventHandler
 		public void onEntityDamage(EntityDamageEvent event)
 		{
+			if(event instanceof EntityDamageByEntityEvent)
+				onEntityAttack((EntityDamageByEntityEvent)event);
+
 			Entity e = event.getEntity();
 			Location loc = e.getLocation();
 			for(String key : dungeonMap.keySet())
@@ -3084,6 +3087,23 @@ public class DungeonBuilder extends JavaPlugin
 						continue;
 
 					d.entityDamage(e);
+					return;
+				}
+			}
+		}
+
+		public void onEntityAttack(EntityDamageByEntityEvent event)
+		{
+			Entity e = event.getDamager();
+			Location loc = e.getLocation();
+			for(String key : dungeonMap.keySet())
+			{
+				for(Dungeon d : dungeonMap.get(key))
+				{
+					if(!d.containsLocation(loc))
+						continue;
+
+					d.entityAttack(e, event);
 					return;
 				}
 			}

@@ -2539,6 +2539,33 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 	}
 
+	public void entityAttack(Entity e, Event event)
+	{
+		for(MonsterInfo mi : savedMonsters)
+		{
+			if(!mi.containsMonster(e))
+				continue;
+
+			String script = mi.getScript();
+			if(script.length() > 0)
+			{
+				Player target = null;
+				if(e instanceof Creature)
+				{
+					Entity temp = ((Creature)e).getTarget();
+					if(temp instanceof Player)
+						target = (Player)temp;
+				}
+
+				HashMap<String, Object> inject = new HashMap<String, Object>();
+				inject.put("event", event);
+				ScriptManager.runMonsterScript(this, plugin.server, target, plugin, e, script, "monster_attack", inject);
+			}
+
+			return;
+		}
+	}
+
 	public void addIgnoreType(Material m)
 	{
 		ignoreTypes.add(m);

@@ -101,6 +101,11 @@ public class ScriptManager
 
 	public static void runMonsterScript(Dungeon d, Server s, Player p, Plugin plugin, Entity m, String scriptName, String methodName)
 	{
+		runMonsterScript(d, s, p, plugin, m, scriptName, methodName, new HashMap<String, Object>());
+	}
+
+	public static void runMonsterScript(Dungeon d, Server s, Player p, Plugin plugin, Entity m, String scriptName, String methodName, HashMap<String, Object> inject)
+	{
 		File script = new File("plugins/dungeons/monsters/" + scriptName);
 		if(!script.exists())
 		{
@@ -134,6 +139,8 @@ public class ScriptManager
 		if(m != null)
 			engine.put("monster", m);
 		engine.put("persistedObjects", persistedObjects.get(scriptName));
+		for(String key : inject.keySet())
+			engine.put(key, inject.get(key));
 
 		try
 		{
