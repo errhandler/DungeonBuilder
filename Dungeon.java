@@ -21,7 +21,8 @@ public class Dungeon implements Comparable<Dungeon>
 	private DungeonBuilder plugin;
 	private String owner, name;
 	private Location start, center, exit, teleporter, exitdest, sphereCenter;
-	private int width, depth, height, exp = -1, lives = -1;
+	private int width, depth, height, lives = -1;
+	private String exp = "-1";
 	private long dungeonCooldown = 0;
 	private ArrayList<BlockInfo> blocks, origBlocks = null;
 	private ArrayList<Entity> liveMonsters;
@@ -1139,8 +1140,7 @@ public class Dungeon implements Comparable<Dungeon>
 			pw.print("World:" + world.getName() + "," + world.getEnvironment().getId() + "\n");
 			pw.print("PartySize:" + partySizeMin + "-" + partySizeMax + "\n");
 			pw.print("Reward:" + reward + "\n");
-			if(exp > 0)
-				pw.print("ExpReward:" + exp + "\n");
+			pw.print("ExpReward:" + exp + "\n");
 			pw.print("Cooldown:" + dungeonCooldown + "\n");
 			pw.print("Autoload:" + autoload + "\n");
 			pw.print("Lives:" + lives + "\n");
@@ -1354,12 +1354,12 @@ public class Dungeon implements Comparable<Dungeon>
 		if(line.startsWith("ExpReward:"))
 		{
 			String temp = line.substring(10);
-			this.exp = Integer.parseInt(temp);
+			this.exp = temp;
 
 			line = br.readLine();
 		}
 		else
-			exp = -1;
+			exp = "-1";
 
 		if(line.startsWith("Cooldown:"))
 		{
@@ -2219,20 +2219,38 @@ public class Dungeon implements Comparable<Dungeon>
 	//	return new ArrayList<Player>(currentPlayers);
 	//}
 
-	public void setExpReward(int reward)
+	public void setExpReward(String reward)
 	{
 		this.exp = reward;
 	}
 
-	public int getExpReward()
+	public String getExpReward()
 	{
 		return exp;
 	}
 
 	public void rewardPlayerExp(Player p)
 	{
-		if(exp > 0)
-			p.giveExp(exp);
+		try
+		{
+			if(exp.endsWith("L"))
+			{
+				String temp = exp.substring(0, exp.length() - 1);
+				int amount = Integer.parseInt(temp);
+				if(amount > 0)
+					p.setLevel(p.getLevel() + amount);
+			}
+			else
+			{
+				int amount = Integer.parseInt(exp);
+				if(amount > 0)
+					p.giveExp(amount);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void toggleAutoload(boolean enabled)

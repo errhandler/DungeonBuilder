@@ -72,7 +72,7 @@ public class DBPlayerListener implements Listener, EventExecutor
 				else
 				{
 					remainingLives.put(playername, lives);
-					p.sendMessage("You have " + lives-1 + " lives remaining");
+					p.sendMessage("You have " + (lives-1) + " lives remaining");
 				}
 			}
 

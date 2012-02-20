@@ -2272,17 +2272,8 @@ public class DungeonBuilder extends JavaPlugin
 				return true;
 			}
 
-			try
-			{
-				int exp = Integer.parseInt(args[1]);
-				d.setExpReward(exp);
-				sender.sendMessage("Exp reward for dungeon '" + alias + "' set to " + exp);
-			}
-			catch(Exception e)
-			{
-				sender.sendMessage("Invalid exp amount: " + args[1]);
-				return false;
-			}
+			d.setExpReward(args[1]);
+			sender.sendMessage("Exp reward for dungeon '" + alias + "' set to " + args[1]);
 		}
 
 		if(label.equals("showexpreward") && checkPermission(player, "dungeonbuilder.dungeons.expreward"))
@@ -2302,11 +2293,14 @@ public class DungeonBuilder extends JavaPlugin
 				return true;
 			}
 
-			int exp = d.getExpReward();
-			if(exp > 0)
-				sender.sendMessage("Current exp reward set to " + exp + " for dungeon '" + alias + "'");
+			String exp = d.getExpReward();
+			if(exp.endsWith("L"))
+			{
+				exp = exp.substring(0, exp.length() - 1);
+				sender.sendMessage("Current exp reward is " + exp + " levels for dungeon '" + alias + "'");
+			}
 			else
-				sender.sendMessage("There is currently no exp reward for dungeon '" + alias + "'");
+				sender.sendMessage("Current exp reward set to " + exp + " for dungeon '" + alias + "'");
 		}
 
 		if(label.equals("setdungeoncooldown") && checkPermission(player, "dungeonbuilder.dungeons.cooldown"))
