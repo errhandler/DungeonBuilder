@@ -42,6 +42,7 @@ public class Dungeon implements Comparable<Dungeon>
 	private volatile DungeonParty activeParty;
 	private volatile PartyStatus currentStatus;
 	private HashSet<Material> ignoreTypes = new HashSet<Material>();
+	private static int BLOCK_FILE_VERSION = 1;
 
 	public enum PartyStatus
 	{
@@ -1134,9 +1135,16 @@ public class Dungeon implements Comparable<Dungeon>
 		throws Exception
 	{
 		PrintWriter pw = null;
+		DataOutputStream dos = null;
 		try
 		{
 			pw = new PrintWriter(new FileWriter(dungeonFile));
+			if(!relative)
+			{
+				dos = new DataOutputStream(new FileOutputStream(dungeonFile.getPath() + ".blocks"));
+				dos.writeInt(BLOCK_FILE_VERSION);
+			}
+
 			pw.print("World:" + world.getName() + "," + world.getEnvironment().getId() + "\n");
 			pw.print("PartySize:" + partySizeMin + "-" + partySizeMax + "\n");
 			pw.print("Reward:" + reward + "\n");
@@ -1223,10 +1231,15 @@ public class Dungeon implements Comparable<Dungeon>
 						metaStr = bi.getMetaString();
 
 					if(metaStr == null)
-						pw.print(createLocationString(loc, relative) + "," + m.getId() + "," +  b.getData() + "\n");
+					{
+						if(!relative)
+							bi.writeData(dos);
+						else
+							pw.print(createLocationStringYP(loc, relative) + "," + m.getId() + "," +  b.getData() + "\n");
+					}
 					else
 					{
-						pw.print(createLocationString(loc, relative) + "," + m.getId() + "," +  b.getData() + "," + metaStr + "\n");
+						pw.print(createLocationStringYP(loc, relative) + "," + m.getId() + "," +  b.getData() + "," + metaStr + "\n");
 						bi.setMetaString(metaStr);
 					}
 				}
@@ -1250,6 +1263,8 @@ public class Dungeon implements Comparable<Dungeon>
 		{
 			if(pw != null)
 				pw.close();
+			if(dos != null)
+				dos.close();
 		}
 
 		File permFile = new File(DungeonBuilder.dungeonRoot + "/" + owner + "/" + name + ".perms");
@@ -1578,8 +1593,17 @@ public class Dungeon implements Comparable<Dungeon>
 			if(comps.length < 4)
 				throw new Exception("The dungeon file is missing required fields");
 
-			Location loc = createLocation(world, comps[0], comps[1], comps[2], relative);
-			int type = Integer.parseInt(comps[3]);
+			int offset = 3;
+			Location loc = null;
+			if(comps.length < 7)
+				loc = createLocation(world, comps[0], comps[1], comps[2], relative);
+			else
+			{
+				loc = createLocationYP(world, comps[0], comps[1], comps[2], comps[3], comps[4], relative);
+				offset = 5;
+			}
+
+			int type = Integer.parseInt(comps[offset]);
 			Block b = loc.getBlock();
 			if(relative)
 				origBlocks.add(new BlockInfo(b));
@@ -1587,16 +1611,42 @@ public class Dungeon implements Comparable<Dungeon>
 			Byte data = null;
 			if(comps.length == 5)
 			{
-				data = Byte.parseByte(comps[4]);
+				data = Byte.parseByte(comps[offset+1]);
 			}
 
 			BlockInfo bi = new BlockInfo(b, m, data);
 			if(comps.length == 6)
 			{
-				bi.setMetaString(comps[5]);	
+				bi.setMetaString(comps[offset+2]);	
 			}
 
 			blocks.add(bi);
+		}
+
+		File blockFile = new File(dungeonFile.getPath() + ".blocks");
+		if(blockFile.exists())
+		{
+			DataInputStream dis = null;
+			try
+			{
+				dis = new DataInputStream(new FileInputStream(blockFile));
+				int version = dis.readInt();
+				BlockInfo bi = BlockInfo.readData(version, dis, world);
+				while(bi != null)
+				{
+					blocks.add(bi);
+					bi = BlockInfo.readData(version, dis, world);
+				}
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				if(dis != null)
+					dis.close();
+			}
 		}
 
 		Collections.sort(blocks);
@@ -1679,6 +1729,20 @@ public class Dungeon implements Comparable<Dungeon>
 		return new Location(w, xd, yd, zd);
 	}
 
+	public Location createLocationYP(World w, String x, String y, String z, String yaw, String pitch, boolean relative)
+		throws Exception
+	{
+		Location retVal = createLocation(w, x, y, z, relative);
+
+		float fyaw = Float.parseFloat(yaw);
+		float fpitch = Float.parseFloat(pitch);
+
+		retVal.setYaw(fyaw);
+		retVal.setPitch(fpitch);
+
+		return retVal;
+	}
+
 	public String createLocationString(Location loc, boolean relative)
 	{
 		StringBuffer retVal = new StringBuffer();
@@ -1698,6 +1762,15 @@ public class Dungeon implements Comparable<Dungeon>
 		retVal.append("," + z);
 
 		return retVal.toString();
+	}
+
+	public String createLocationStringYP(Location loc, boolean relative)
+	{
+		String retVal = createLocationString(loc, relative);
+		retVal = retVal + "," + loc.getYaw();
+		retVal = retVal + "," + loc.getPitch();
+
+		return retVal;
 	}
 
 	private String createSignString(org.bukkit.block.Sign s)

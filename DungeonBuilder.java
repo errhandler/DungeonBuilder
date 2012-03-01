@@ -3437,6 +3437,8 @@ public class DungeonBuilder extends JavaPlugin
 					continue;
 				if(dungeonName.endsWith(".cooldowns"))
 					continue;
+				if(dungeonName.endsWith(".blocks"))
+					continue;
 
 				try
 				{

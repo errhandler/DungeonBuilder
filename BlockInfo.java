@@ -7,6 +7,7 @@ import org.bukkit.entity.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import java.util.*;
+import java.io.*;
 
 public class BlockInfo implements Comparable<BlockInfo>
 {
@@ -307,6 +308,45 @@ public class BlockInfo implements Comparable<BlockInfo>
 			return 1;
 
 		return 0;
+	}
+
+	public void writeData(DataOutputStream dos)
+		throws Exception
+	{
+		dos.writeDouble(b.getX());
+		dos.writeDouble(b.getY());
+		dos.writeDouble(b.getZ());
+		dos.writeFloat(b.getLocation().getPitch());
+		dos.writeFloat(b.getLocation().getYaw());
+		dos.writeInt(b.getType().getId());
+		dos.write(b.getData());
+	}
+
+	public static BlockInfo readData(int version, DataInputStream dis, World world)
+		throws Exception
+	{
+		try
+		{
+			double x = dis.readDouble();
+			double y = dis.readDouble();
+			double z = dis.readDouble();
+			float pitch = dis.readFloat();
+			float yaw = dis.readFloat();
+
+			Location loc = new Location(world, x, y, z, yaw, pitch);
+			Block b = loc.getBlock();
+
+			int type = dis.readInt();
+			Material m = Material.getMaterial(type);
+
+			byte data = dis.readByte();
+
+			return new BlockInfo(b, m, data);
+		}
+		catch(EOFException eofe)
+		{
+			return null;
+		}
 	}
 	
 	//@Override public int compareTo(BlockInfo bi2)
