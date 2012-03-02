@@ -1020,9 +1020,9 @@ public class Dungeon implements Comparable<Dungeon>
 			{
 				Block b = bi.getBlock();
 				BlockState bs = b.getState();
-				if(bs instanceof ContainerBlock)
+				if(bs instanceof InventoryHolder)
 				{
-					ContainerBlock cb = (ContainerBlock)bs;
+					InventoryHolder cb = (InventoryHolder)bs;
 					cb.getInventory().clear();
 				}
 
@@ -1216,9 +1216,9 @@ public class Dungeon implements Comparable<Dungeon>
 
 					String metaStr = null;
 					BlockState bs = b.getState();
-					if(bs instanceof ContainerBlock)
+					if(bs instanceof InventoryHolder)
 					{
-						metaStr = createInventoryString((ContainerBlock)bs);
+						metaStr = createInventoryString((InventoryHolder)bs);
 					}
 
 					if(bs instanceof org.bukkit.block.Sign)
@@ -1235,11 +1235,11 @@ public class Dungeon implements Comparable<Dungeon>
 						if(!relative)
 							bi.writeData(dos);
 						else
-							pw.print(createLocationStringYP(loc, relative) + "," + m.getId() + "," +  b.getData() + "\n");
+							pw.print(createLocationString(loc, relative) + "," + m.getId() + "," +  b.getData() + "\n");
 					}
 					else
 					{
-						pw.print(createLocationStringYP(loc, relative) + "," + m.getId() + "," +  b.getData() + "," + metaStr + "\n");
+						pw.print(createLocationString(loc, relative) + "," + m.getId() + "," +  b.getData() + "," + metaStr + "\n");
 						bi.setMetaString(metaStr);
 					}
 				}
@@ -1593,17 +1593,9 @@ public class Dungeon implements Comparable<Dungeon>
 			if(comps.length < 4)
 				throw new Exception("The dungeon file is missing required fields");
 
-			int offset = 3;
-			Location loc = null;
-			if(comps.length < 7)
-				loc = createLocation(world, comps[0], comps[1], comps[2], relative);
-			else
-			{
-				loc = createLocationYP(world, comps[0], comps[1], comps[2], comps[3], comps[4], relative);
-				offset = 5;
-			}
+			Location loc = createLocation(world, comps[0], comps[1], comps[2], relative);
 
-			int type = Integer.parseInt(comps[offset]);
+			int type = Integer.parseInt(comps[3]);
 			Block b = loc.getBlock();
 			if(relative)
 				origBlocks.add(new BlockInfo(b));
@@ -1611,13 +1603,13 @@ public class Dungeon implements Comparable<Dungeon>
 			Byte data = null;
 			if(comps.length == 5)
 			{
-				data = Byte.parseByte(comps[offset+1]);
+				data = Byte.parseByte(comps[4]);
 			}
 
 			BlockInfo bi = new BlockInfo(b, m, data);
 			if(comps.length == 6)
 			{
-				bi.setMetaString(comps[offset+2]);	
+				bi.setMetaString(comps[5]);	
 			}
 
 			blocks.add(bi);
@@ -1797,7 +1789,7 @@ public class Dungeon implements Comparable<Dungeon>
 		}
 	}
 
-	private String createInventoryString(ContainerBlock cb)
+	private String createInventoryString(InventoryHolder cb)
 	{
 		Inventory i = cb.getInventory();
 		StringBuffer retVal = new StringBuffer();
@@ -1825,7 +1817,7 @@ public class Dungeon implements Comparable<Dungeon>
 		return retVal.toString();
 	}
 
-	public static void parseInventoryString(ContainerBlock cb, String invStr)
+	public static void parseInventoryString(InventoryHolder cb, String invStr)
 	{
 		Inventory i = cb.getInventory();
 		i.clear();
@@ -2777,11 +2769,11 @@ public class Dungeon implements Comparable<Dungeon>
 			if(type.equals("pig-zombie"))
 				type = "PIG_ZOMBIE";
 
-			CreatureType ct = null;
+			EntityType ct = null;
 
 			try
 			{
-				ct = CreatureType.valueOf(type.toUpperCase());
+				ct = EntityType.valueOf(type.toUpperCase());
 			}
 			catch(Exception e)
 			{

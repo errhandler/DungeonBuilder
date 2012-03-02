@@ -4,6 +4,7 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.material.*;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import java.util.*;
@@ -103,9 +104,9 @@ public class BlockInfo implements Comparable<BlockInfo>
 		if(metaStr != null)
 		{
 			BlockState bs = b.getState();
-			if(bs instanceof ContainerBlock)
+			if(bs instanceof InventoryHolder)
 			{
-				Dungeon.parseInventoryString((ContainerBlock)bs, metaStr);	
+				Dungeon.parseInventoryString((InventoryHolder)bs, metaStr);	
 			}
 
 			if(bs instanceof org.bukkit.block.Sign)

@@ -960,7 +960,7 @@ public class DungeonBuilder extends JavaPlugin
 
 			try
 			{
-				CreatureType.valueOf(type);
+				EntityType.valueOf(type);
 			}
 			catch(Exception e)
 			{
