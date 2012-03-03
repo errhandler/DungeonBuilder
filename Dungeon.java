@@ -1787,6 +1787,7 @@ public class Dungeon implements Comparable<Dungeon>
 		{
 			s.setLine(i, lines[i]);
 		}
+		s.update();
 	}
 
 	private String createInventoryString(InventoryHolder cb)
