@@ -96,6 +96,10 @@ public class BlockInfo implements Comparable<BlockInfo>
 		if(m == null)
 			return;
 
+		BlockState bs = b.getState();
+		if(bs instanceof InventoryHolder)
+			((InventoryHolder)bs).getInventory().clear();
+
 		b.setType(m);
 			
 		if(data != null)
@@ -103,7 +107,7 @@ public class BlockInfo implements Comparable<BlockInfo>
 		
 		if(metaStr != null)
 		{
-			BlockState bs = b.getState();
+			bs = b.getState();
 			if(bs instanceof InventoryHolder)
 			{
 				Dungeon.parseInventoryString((InventoryHolder)bs, metaStr);	
