@@ -2171,7 +2171,10 @@ public class Dungeon implements Comparable<Dungeon>
 
 			Player p = plugin.server.getPlayer(pname);
 			if(p == null)
+			{
+				plugin.idleTimer.put(pname, System.currentTimeMillis() - DungeonBuilder.idleTimeout);
 				continue partyloop;
+			}
 
 			Location loc = p.getLocation();
 			if(containsLocation(loc))

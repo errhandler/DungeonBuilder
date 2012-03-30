@@ -1,6 +1,6 @@
 name: DungeonBuilder
 main: net.virtuallyabstract.minecraft.DungeonBuilder
-version: 0.9.5
+version: 0.9.6
 permissions:
   dungeonbuilder.*:
     description: Grants all dungeon builder permissions

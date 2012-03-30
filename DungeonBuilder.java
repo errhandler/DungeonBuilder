@@ -46,7 +46,7 @@ public class DungeonBuilder extends JavaPlugin
 	private MyServerListener economyListener;
 	private DBPlayerListener playerListener;
 	public BukkitScheduler scheduler = null;
-	private static final Long idleTimeout = 60000L;
+	static final Long idleTimeout = 60000L;
 
 	static
 	{
@@ -197,7 +197,7 @@ public class DungeonBuilder extends JavaPlugin
 
 	@Override public void onEnable()
 	{
-		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.5) Enabled");
+		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.6) Enabled");
 
 		server = this.getServer();
 
