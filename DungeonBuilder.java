@@ -16,9 +16,9 @@ import org.bukkit.scheduler.*;
 import com.nijikokun.register.payment.*;
 import com.nijikokun.register.payment.Method.MethodAccount;
 import org.bukkit.plugin.Plugin;
-import com.herocraftonline.dev.heroes.*;
-import com.herocraftonline.dev.heroes.party.*;
-import com.herocraftonline.dev.heroes.hero.*;
+import com.herocraftonline.heroes.*;
+import com.herocraftonline.heroes.characters.*;
+import com.herocraftonline.heroes.characters.party.*;
 import java.util.logging.*;
 import java.util.concurrent.*;
 import java.util.*;
@@ -197,7 +197,7 @@ public class DungeonBuilder extends JavaPlugin
 
 	@Override public void onEnable()
 	{
-		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.6) Enabled");
+		myLogger.log(Level.INFO, "DungeonBuilder (v.0.9.7) Enabled");
 
 		server = this.getServer();
 

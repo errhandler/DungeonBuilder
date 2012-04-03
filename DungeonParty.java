@@ -1,7 +1,7 @@
 package net.virtuallyabstract.minecraft;
 
-import com.herocraftonline.dev.heroes.party.*;
-import com.herocraftonline.dev.heroes.hero.*;
+import com.herocraftonline.heroes.characters.*;
+import com.herocraftonline.heroes.characters.party.*;
 import org.bukkit.entity.*;
 import org.bukkit.*;
 import java.util.*;
@@ -38,7 +38,8 @@ public class DungeonParty
 		if(heroParty != null)
 		{
 			Player p = server.getPlayer(member);
-			Hero h = DungeonBuilder.heroesPlugin.getHeroManager().getHero(p);
+			CharacterManager cm = new CharacterManager(DungeonBuilder.heroesPlugin);
+			Hero h = cm.getHero(p);
 			heroParty.addMember(h);
 
 			return;
@@ -52,7 +53,8 @@ public class DungeonParty
 		if(heroParty != null)
 		{
 			Player p = server.getPlayer(member);
-			Hero h = DungeonBuilder.heroesPlugin.getHeroManager().getHero(p);
+			CharacterManager cm = new CharacterManager(DungeonBuilder.heroesPlugin);
+			Hero h = cm.getHero(p);
 			heroParty.removeMember(h);
 
 			return;

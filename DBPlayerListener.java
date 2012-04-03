@@ -7,8 +7,8 @@ import org.bukkit.event.*;
 import org.bukkit.plugin.*;
 import java.util.concurrent.*;
 import java.util.*;
-import com.herocraftonline.dev.heroes.party.*;
-import com.herocraftonline.dev.heroes.hero.*;
+import com.herocraftonline.heroes.characters.*;
+import com.herocraftonline.heroes.characters.party.*;
 
 public class DBPlayerListener implements Listener, EventExecutor
 {
